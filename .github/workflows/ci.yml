@@ -1,0 +1,56 @@
+name: RideLink Microservices CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build-and-test:
+    name: Build & Verify Microservices
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        service:
+          - account-service
+          - driver-vehicle-service
+          - ride-management-service
+          - fare-payment-service
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build and Test ${{ matrix.service }}
+        run: |
+          echo "Building and running tests for ${{ matrix.service }}..."
+          mvn -B clean test --file ${{ matrix.service }}/pom.xml
+
+  full-system-verify:
+    name: Full System Aggregation Check
+    needs: build-and-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Verify Multi-Module Aggregator
+        run: |
+          mvn -B compile

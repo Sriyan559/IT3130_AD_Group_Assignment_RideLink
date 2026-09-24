@@ -1,0 +1,21 @@
+%% RideLink Data Ownership & Boundary Diagram (Mermaid)
+graph LR
+    subgraph "Service 1: Account Service"
+        AS["Account Service"] -->|"Exclusively Controls"| DB1[("account_db")]
+        DB1 --- T1["• users\n• credentials\n• roles\n• profiles\n• account_status"]
+    end
+
+    subgraph "Service 2: Driver & Vehicle Service"
+        DS["Driver & Vehicle Service"] -->|"Exclusively Controls"| DB2[("driver_db")]
+        DB2 --- T2["• drivers\n• vehicles\n• availability_status\n• simulated_locations\n• service_areas"]
+    end
+
+    subgraph "Service 3: Ride Management Service"
+        RS["Ride Management Service"] -->|"Exclusively Controls"| DB3[("ride_db")]
+        DB3 --- T3["• rides\n• status_history\n• timestamps\n• scalar references:\n  (passenger_id, driver_id, fare_id)"]
+    end
+
+    subgraph "Service 4: Fare & Payment Service"
+        FS["Fare & Payment Service"] -->|"Exclusively Controls"| DB4[("payment_db")]
+        DB4 --- T4["• fare_rules\n• fare_estimates\n• payments\n• payment_status\n• receipts"]
+    end

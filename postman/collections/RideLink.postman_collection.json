@@ -1,0 +1,58 @@
+{
+	"info": {
+		"_postman_id": "ridelink-postman-collection-v1",
+		"name": "RideLink Microservices API",
+		"description": "IT3130 - Application Development: Postman Collection for demonstrating the RideLink Backend Microservices.\n\nStructure:\n01 Account Service\n02 Driver & Vehicle Service\n03 Ride Management Service\n04 Fare & Payment Service\n05 End-to-End Workflow\n06 Negative Scenarios\n\nNote: Endpoints are mapped to their respective service base URLs and will be populated with specific request payloads during implementation phases.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "01 Account Service",
+			"description": "Endpoints owned by Account Service (Port 8081). Handles registration, login, JWT issuance, roles, and profile management.",
+			"item": []
+		},
+		{
+			"name": "02 Driver & Vehicle Service",
+			"description": "Endpoints owned by Driver & Vehicle Service (Port 8082). Handles vehicle details, availability status, and simulated GPS location.",
+			"item": []
+		},
+		{
+			"name": "03 Ride Management Service",
+			"description": "Endpoints owned by Ride Management Service (Port 8083). Handles ride request creation, driver assignment, and status lifecycle.",
+			"item": []
+		},
+		{
+			"name": "04 Fare & Payment Service",
+			"description": "Endpoints owned by Fare & Payment Service (Port 8084). Handles upfront fare estimates, final calculations, payments, and receipts.",
+			"item": []
+		},
+		{
+			"name": "05 End-to-End Workflow",
+			"description": "Sequential test workflow linking registration -> vehicle onboarding -> fare estimate -> ride booking -> driver assignment -> trip completion -> simulated payment and receipt generation.",
+			"item": []
+		},
+		{
+			"name": "06 Negative Scenarios",
+			"description": "Demonstrates error handling: no available driver, invalid state machine transition, unauthorized access, invalid input validation, and payment failures.",
+			"item": []
+		}
+	],
+	"variable": [
+		{
+			"key": "account_url",
+			"value": "http://localhost:8081"
+		},
+		{
+			"key": "driver_url",
+			"value": "http://localhost:8082"
+		},
+		{
+			"key": "ride_url",
+			"value": "http://localhost:8083"
+		},
+		{
+			"key": "payment_url",
+			"value": "http://localhost:8084"
+		}
+	]
+}

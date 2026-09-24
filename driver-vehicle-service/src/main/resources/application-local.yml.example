@@ -1,0 +1,10 @@
+# Example Local Development Override Configuration for Driver & Vehicle Service
+# Copy to application-local.yml (which is ignored by Git) for local testing
+
+server:
+  port: 8082
+
+spring:
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/driver_db

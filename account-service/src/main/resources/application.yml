@@ -1,0 +1,33 @@
+server:
+  port: ${ACCOUNT_SERVICE_PORT:8081}
+
+spring:
+  application:
+    name: account-service
+  datasource:
+    url: jdbc:postgresql://${ACCOUNT_DB_HOST:localhost}:${ACCOUNT_DB_PORT:5432}/${ACCOUNT_DB_NAME:account_db}
+    username: ${ACCOUNT_DB_USERNAME:account_user}
+    password: ${ACCOUNT_DB_PASSWORD:account_password}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+# Springdoc OpenAPI Configuration
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+
+# Security & JWT Configuration Placeholders
+security:
+  jwt:
+    secret: ${JWT_SECRET:default_dev_secret_key_needs_override_minimum_256_bits}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}

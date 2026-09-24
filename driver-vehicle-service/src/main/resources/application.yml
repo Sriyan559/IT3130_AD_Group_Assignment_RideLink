@@ -1,0 +1,22 @@
+server:
+  port: ${DRIVER_SERVICE_PORT:8082}
+
+spring:
+  application:
+    name: driver-vehicle-service
+  data:
+    mongodb:
+      host: ${DRIVER_DB_HOST:localhost}
+      port: ${DRIVER_DB_PORT:27017}
+      database: ${DRIVER_DB_NAME:driver_db}
+      # username: ${DRIVER_DB_USERNAME:driver_user}
+      # password: ${DRIVER_DB_PASSWORD:driver_password}
+      # authentication-database: ${DRIVER_DB_AUTH_DB:admin}
+
+# Springdoc OpenAPI Configuration
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method

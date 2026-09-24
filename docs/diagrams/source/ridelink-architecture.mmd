@@ -1,0 +1,17 @@
+%% RideLink System Architecture Source (Mermaid)
+graph TD
+    Client["Swagger UI / Postman Test Harness"] -->|HTTP REST| AS["Account Service (Port 8081)\n[Fernando B S C - IT24103775]"]
+    Client -->|HTTP REST| DS["Driver & Vehicle Service (Port 8082)\n[Rathnakoon D A - IT24300246]"]
+    Client -->|HTTP REST| RS["Ride Management Service (Port 8083)\n[Herath H M S R - IT24103280]"]
+    Client -->|HTTP REST| FS["Fare & Payment Service (Port 8084)\n[Sanjeewa H.D.U.S - IT24101590]"]
+
+    RS -.->|"GET /drivers/eligible (REST)"| DS
+    RS -.->|"POST /payments/process (REST)"| FS
+    RS -.->|"GET /accounts/verify (REST)"| AS
+
+    subgraph "Independent Persistence (No Cross-Database Access)"
+        AS -->|"JDBC (Dedicated)"| DB_ACC[("account_db\n(PostgreSQL)")]
+        DS -->|"Spring Data Mongo (Dedicated)"| DB_DRV[("driver_db\n(MongoDB)")]
+        RS -->|"JDBC (Dedicated)"| DB_RIDE[("ride_db\n(PostgreSQL)")]
+        FS -->|"JDBC (Dedicated)"| DB_PAY[("payment_db\n(PostgreSQL)")]
+    end
