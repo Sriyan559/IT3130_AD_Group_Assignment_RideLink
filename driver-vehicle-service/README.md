@@ -3,7 +3,11 @@
 **IT3130 – Application Development: Group Assignment**  
 **Component:** Driver & Vehicle Service Microservice  
 **Primary Owner:** Rathnakoon D A (Student ID: IT24300246)  
-**Status:** `STRUCTURE READY / NOT IMPLEMENTED`
+**Status:** `IN PROGRESS / DRIVER PROFILE CREATION IMPLEMENTED`
+
+The first increment implements `POST /api/drivers`, MongoDB persistence, request validation,
+duplicate account/licence protection and automated tests. See [the first API guide](docs/driver-profile-create.md).
+The responsibilities below describe the full planned service; other endpoints and authentication integration remain pending.
 
 ---
 
@@ -54,4 +58,4 @@ mvn clean package -DskipTests
 # Run independently
 mvn spring-boot:run
 ```
-*(Business logic not yet implemented; structure is prepared for subsequent phases)*
+*Driver profile creation is implemented. See the first API guide for verification commands and remaining work.*
