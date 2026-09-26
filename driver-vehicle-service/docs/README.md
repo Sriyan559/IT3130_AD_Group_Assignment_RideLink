@@ -11,4 +11,5 @@ This directory contains specifications, schema models, and location simulation l
 
 - [Create a driver profile](driver-profile-create.md)
 - [Retrieve a driver profile](driver-profile-get.md)
+- [Register a vehicle](vehicle-registration.md)
 - [Project instructions and dated work log](../../AGENTS.md)

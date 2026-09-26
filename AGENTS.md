@@ -42,23 +42,27 @@ without relying on chat memory. This file applies throughout this repository.
 
 ## Current state (last checked 2026-09-26)
 
-- Implemented: `POST /api/drivers` and `GET /api/drivers/{driverId}`.
+- Implemented: `POST /api/drivers`, `GET /api/drivers/{driverId}` and
+  `POST /api/drivers/{driverId}/vehicles`.
+- Vehicle registration checks driver existence, validates attributes, normalizes plates
+  and uses a unique MongoDB plate index. It does not change driver availability.
 - Creation includes validation, normalization, initial OFFLINE status, MongoDB persistence
   and unique account/licence indexes. Lookup includes a structured missing-driver error.
 - Error responses cover invalid requests, duplicate profiles, missing profiles and
   database access failures.
-- Latest verification: `mvn -B -pl driver-vehicle-service -am verify` passed 17 tests
+- Latest verification: `mvn -B -pl driver-vehicle-service -am verify` passed 51 tests
   with zero failures/errors/skips on 2026-09-26, using local JDK 21 and Java 17 compilation target.
   Tests use mocks; live MongoDB behavior was not verified in that run.
 - Authentication, ownership checks and Account Service verification are pending.
 - Planned documentation uses `/api/v1/drivers`, while implemented local endpoints use
   `/api/drivers`. Reconcile the route contract before integration.
 - Guides: [creation](driver-vehicle-service/docs/driver-profile-create.md),
-  [lookup](driver-vehicle-service/docs/driver-profile-get.md).
+  [lookup](driver-vehicle-service/docs/driver-profile-get.md),
+  [vehicle registration](driver-vehicle-service/docs/vehicle-registration.md).
 
 ## Next work (planned, not implemented)
 
-- Choose the next small Driver & Vehicle increment: vehicle registration, availability
+- Choose the next small Driver & Vehicle increment: availability
   updates, simulated location updates or eligible-driver queries.
 - Add appropriate validation, error handling, tests and usage documentation for each increment.
 - Verify the implemented endpoints against a running local MongoDB instance.
@@ -130,6 +134,23 @@ Shared repository setup is not a claim of individual contribution by the current
   destination remote hash and successful duplicate deletion. Documentation whitespace
   check passed; application tests were not rerun because code was unchanged.
 - Documentation status at writing: prepared for commit and push on the original branch.
+
+### 2026-09-26 - Vehicle registration
+
+- Added `POST /api/drivers/{driverId}/vehicles` with request/response DTOs, controller,
+  service, MongoDB vehicle document/repository and a unique normalized-plate startup index.
+- Missing driver returns `404`; duplicate plate returns vehicle-specific `409`;
+  invalid input returns `400` and database failures use the existing safe `503` response.
+- Plates are uppercase without spaces/hyphens; make/model are trimmed and vehicle class
+  is trimmed/uppercased. Capacity must be positive. Registration preserves driver availability.
+- Added 34 vehicle unit/HTTP tests and a usage guide; updated both documentation indexes.
+- Verification: Maven verify passed all 51 tests with zero failures/errors/skips;
+  `git diff --check` passed. Live MongoDB and concurrent index enforcement remain unverified.
+- Previous work-log/branch consolidation was committed as `32cdfd4` and pushed.
+- Git: vehicle increment committed locally on `feature/it24300246-driver-vehicle-service`.
+  Push blocked at Git credential-manager authentication. A noninteractive retry failed
+  with `unable to get password from user`; the user must sign in and run `git push`.
+  The stalled push processes were stopped. No remote vehicle commit was confirmed.
 
 ## Entry template
 

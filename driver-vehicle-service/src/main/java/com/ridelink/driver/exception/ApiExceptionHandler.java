@@ -47,6 +47,12 @@ public class ApiExceptionHandler {
         return error(HttpStatus.NOT_FOUND, "DRIVER_NOT_FOUND", "Driver profile not found", request);
     }
 
+    @ExceptionHandler(VehicleAlreadyExistsException.class)
+    public ResponseEntity<ApiError> vehicleDuplicate(HttpServletRequest request) {
+        return error(HttpStatus.CONFLICT, "VEHICLE_ALREADY_EXISTS",
+                "A vehicle with this plate number already exists", request);
+    }
+
     private ResponseEntity<ApiError> error(HttpStatus status, String code, String message,
                                            HttpServletRequest request) {
         return ResponseEntity.status(status).body(new ApiError(Instant.now(), status.value(),
