@@ -42,6 +42,11 @@ public class ApiExceptionHandler {
                 "Driver data is temporarily unavailable", request);
     }
 
+    @ExceptionHandler(DriverNotFoundException.class)
+    public ResponseEntity<ApiError> driverNotFound(HttpServletRequest request) {
+        return error(HttpStatus.NOT_FOUND, "DRIVER_NOT_FOUND", "Driver profile not found", request);
+    }
+
     private ResponseEntity<ApiError> error(HttpStatus status, String code, String message,
                                            HttpServletRequest request) {
         return ResponseEntity.status(status).body(new ApiError(Instant.now(), status.value(),

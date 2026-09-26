@@ -4,6 +4,7 @@ import com.ridelink.driver.controller.DriverController;
 import com.ridelink.driver.domain.AvailabilityStatus;
 import com.ridelink.driver.dto.request.CreateDriverRequest;
 import com.ridelink.driver.dto.response.DriverResponse;
+import com.ridelink.driver.exception.DriverNotFoundException;
 import com.ridelink.driver.service.DriverService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -18,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(DriverController.class)
@@ -28,6 +30,44 @@ class DriverControllerTest {
     private static final String VALID = """
             {"accountId":"account-1","licenseNumber":"B1234567","serviceArea":"Malabe"}
             """;
+
+    @Test
+    void getExistingDriverReturnsProfile() throws Exception {
+        when(service.getById("driver-1")).thenReturn(new DriverResponse("driver-1", "account-1",
+                "B1234567", "Malabe", AvailabilityStatus.OFFLINE));
+
+        mvc.perform(get("/api/drivers/driver-1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value("driver-1"))
+                .andExpect(jsonPath("$.accountId").value("account-1"))
+                .andExpect(jsonPath("$.licenseNumber").value("B1234567"))
+                .andExpect(jsonPath("$.serviceArea").value("Malabe"))
+                .andExpect(jsonPath("$.availabilityStatus").value("OFFLINE"));
+        verify(service).getById("driver-1");
+    }
+
+    @Test
+    void getMissingDriverReturnsStructuredNotFound() throws Exception {
+        when(service.getById("missing")).thenThrow(new DriverNotFoundException());
+
+        mvc.perform(get("/api/drivers/missing"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error").value("DRIVER_NOT_FOUND"))
+                .andExpect(jsonPath("$.message").value("Driver profile not found"))
+                .andExpect(jsonPath("$.path").value("/api/drivers/missing"));
+    }
+
+    @Test
+    void getDuringDatabaseFailureReturnsSafeError() throws Exception {
+        when(service.getById("driver-1"))
+                .thenThrow(new DataAccessResourceFailureException("internal database details"));
+
+        mvc.perform(get("/api/drivers/driver-1"))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(jsonPath("$.error").value("DATABASE_UNAVAILABLE"))
+                .andExpect(jsonPath("$.message").value("Driver data is temporarily unavailable"));
+    }
 
     @Test
     void validRequestReturnsCreatedDriver() throws Exception {

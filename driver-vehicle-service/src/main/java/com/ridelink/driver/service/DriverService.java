@@ -4,6 +4,7 @@ import com.ridelink.driver.document.Driver;
 import com.ridelink.driver.domain.AvailabilityStatus;
 import com.ridelink.driver.dto.request.CreateDriverRequest;
 import com.ridelink.driver.dto.response.DriverResponse;
+import com.ridelink.driver.exception.DriverNotFoundException;
 import com.ridelink.driver.repository.DriverRepository;
 import java.util.Locale;
 import org.springframework.stereotype.Service;
@@ -21,5 +22,11 @@ public class DriverService {
                 request.licenseNumber().strip().toUpperCase(Locale.ROOT),
                 request.serviceArea().strip(), AvailabilityStatus.OFFLINE);
         return DriverResponse.from(driverRepository.insert(driver));
+    }
+
+    public DriverResponse getById(String driverId) {
+        return driverRepository.findById(driverId)
+                .map(DriverResponse::from)
+                .orElseThrow(DriverNotFoundException::new);
     }
 }
