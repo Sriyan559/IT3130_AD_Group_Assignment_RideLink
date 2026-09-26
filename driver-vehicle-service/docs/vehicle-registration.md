@@ -79,5 +79,8 @@ mvn -B -pl driver-vehicle-service -am verify
 
 On 2026-09-26, all 51 service tests passed (17 existing and 34 new vehicle tests).
 Tests cover normalized values, driver existence, validation and HTTP error responses.
-They use mocks; live MongoDB index enforcement/concurrency and end-to-end registration
-still need manual or integration testing.
+They use mocks. Subsequent live checks on 2026-09-26 against local MongoDB in an
+isolated smoke database passed driver creation/read, vehicle registration (201),
+normalized duplicate rejection (409), missing driver (404) and invalid capacity (400).
+Driver availability remained OFFLINE and Swagger UI returned 200.
+Concurrent requests and live database-outage behavior still need integration testing.

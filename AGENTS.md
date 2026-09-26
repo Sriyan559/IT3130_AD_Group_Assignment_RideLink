@@ -53,6 +53,10 @@ without relying on chat memory. This file applies throughout this repository.
 - Latest verification: `mvn -B -pl driver-vehicle-service -am verify` passed 51 tests
   with zero failures/errors/skips on 2026-09-26, using local JDK 21 and Java 17 compilation target.
   Tests use mocks; live MongoDB behavior was not verified in that run.
+- Subsequent live smoke checks on 2026-09-26 passed against local MongoDB in the
+  isolated database `driver_db_smoke_20260926152647`: driver create/read, vehicle
+  registration, normalized duplicate rejection, missing driver and invalid capacity.
+  Swagger returned 200; registration preserved OFFLINE status. Concurrent requests remain untested.
 - Authentication, ownership checks and Account Service verification are pending.
 - Planned documentation uses `/api/v1/drivers`, while implemented local endpoints use
   `/api/drivers`. Reconcile the route contract before integration.
@@ -65,7 +69,7 @@ without relying on chat memory. This file applies throughout this repository.
 - Choose the next small Driver & Vehicle increment: availability
   updates, simulated location updates or eligible-driver queries.
 - Add appropriate validation, error handling, tests and usage documentation for each increment.
-- Verify the implemented endpoints against a running local MongoDB instance.
+- Add repeatable integration/concurrency tests for MongoDB constraints.
 - Agree on versioned routes, identity/security and eligibility rules with the other service owners.
 
 ## Dated work log
@@ -151,6 +155,38 @@ Shared repository setup is not a claim of individual contribution by the current
   Push blocked at Git credential-manager authentication. A noninteractive retry failed
   with `unable to get password from user`; the user must sign in and run `git push`.
   The stalled push processes were stopped. No remote vehicle commit was confirmed.
+
+### 2026-09-26 - Live MongoDB API verification
+
+- Found MongoDB listening on localhost:27017. Started the built Driver Service JAR
+  on localhost:8082 with isolated database `driver_db_smoke_20260926152647`.
+- Verified driver creation 201, profile read 200, vehicle registration 201,
+  normalized duplicate plate 409 VEHICLE_ALREADY_EXISTS, nonexistent driver 404
+  DRIVER_NOT_FOUND and invalid capacity 400 VALIDATION_ERROR. A second profile read
+  confirmed availability remained OFFLINE. Swagger UI returned 200.
+- The initial PowerShell error-response reader failed after the successful creation
+  requests; reran with HttpClient and all checks passed. This was a test harness issue.
+- Test data retained: two smoke driver/vehicle pairs in the isolated database.
+  Successful full-run driver ID: `6ab7972081b50c2c952779a3`;
+  vehicle ID: `6ab7972081b50c2c952779a4`.
+- Left the local service running (PID 27384) for Swagger inspection; output logs are
+  ignored files `tmp-driver-live-out.log` and `tmp-driver-live-err.log`.
+- Verification limitation: no concurrent-request test or live database-outage test.
+- Vehicle commit `b8514ac` now matches the local remote-tracking branch (no fresh fetch).
+  This verification/documentation update is local and uncommitted at writing.
+
+### 2026-09-26 - End-of-day commit and push
+
+- User requested committing and pushing all completed work for today.
+- Fresh `git fetch origin` confirmed vehicle commit `b8514ac` is on the remote
+  student-ID branch and there are no divergent commits.
+- Reviewed and prepared the remaining live-verification documentation and work log
+  for the end-of-day commit. `git diff --check` passed; no application code changed
+  since the 51 passing tests and successful live checks.
+- Remaining documentation was committed locally. Push failed because Git credential
+  manager requires interactive sign-in (`unable to get password from user`). The user
+  needs to run `git push` in their terminal and complete GitHub authentication.
+- Next feature remains availability updates; no availability implementation was added today.
 
 ## Entry template
 
