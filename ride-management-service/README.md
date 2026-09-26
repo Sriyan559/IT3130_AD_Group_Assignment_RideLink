@@ -3,7 +3,7 @@
 **IT3130 – Application Development: Group Assignment**  
 **Component:** Ride Management Service Microservice  
 **Primary Owner:** Herath H M S R (Student ID: IT24103280)  
-**Status:** `STRUCTURE READY / NOT IMPLEMENTED`
+**Status:** `IMPLEMENTED`
 
 ---
 
@@ -65,4 +65,4 @@ mvn clean package -DskipTests
 # Run independently
 mvn spring-boot:run
 ```
-*(Business logic not yet implemented; structure is prepared for subsequent phases)*
+The service exposes ride creation, ride lookup, passenger history, and lifecycle status transitions. PostgreSQL schema creation is managed by the Flyway migration in `src/main/resources/db/migration`.
