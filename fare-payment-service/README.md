@@ -3,7 +3,7 @@
 **IT3130 – Application Development: Group Assignment**  
 **Component:** Fare & Payment Service Microservice  
 **Primary Owner:** Sanjeewa H.D.U.S (Student ID: IT24101590)  
-**Status:** `FARE CALCULATION IMPLEMENTED / API & PAYMENT FLOW NOT IMPLEMENTED`
+**Status:** `FARE ESTIMATES IMPLEMENTED / PAYMENT FLOW NOT IMPLEMENTED`
 
 ---
 
@@ -16,6 +16,20 @@
 
 The fare rule is Rs. 150 base fare plus Rs. 100 per kilometer. Distances must be
 positive, and calculated fares are rounded to two decimal places.
+
+### Fare Estimate API
+
+`POST /api/fares/estimate`
+
+Request:
+```json
+{"distanceKilometers": 8}
+```
+
+Response:
+```json
+{"distanceKilometers": 8, "estimatedFare": 950.00, "currency": "LKR"}
+```
 
 ## 2. Technology & Architecture
 - **Language:** Java 17
@@ -58,4 +72,4 @@ mvn clean package -DskipTests
 # Run independently
 mvn spring-boot:run
 ```
-*(Business logic not yet implemented; structure is prepared for subsequent phases)*
+*(Payment processing, persistence, and receipt retrieval remain to be implemented.)*
