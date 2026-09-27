@@ -3,7 +3,7 @@
 **IT3130 – Application Development: Group Assignment**  
 **Component:** Fare & Payment Service Microservice  
 **Primary Owner:** Sanjeewa H.D.U.S (Student ID: IT24101590)  
-**Status:** `STRUCTURE READY / NOT IMPLEMENTED`
+**Status:** `FARE CALCULATION IMPLEMENTED / API & PAYMENT FLOW NOT IMPLEMENTED`
 
 ---
 
@@ -13,6 +13,9 @@
 - Simulated payment execution and transaction recording
 - Payment status lifecycle (`PENDING`, `COMPLETED`, `FAILED`, `REFUNDED`)
 - Immutable receipt generation, invoice breakdown, and receipt retrieval
+
+The fare rule is Rs. 150 base fare plus Rs. 100 per kilometer. Distances must be
+positive, and calculated fares are rounded to two decimal places.
 
 ## 2. Technology & Architecture
 - **Language:** Java 17
