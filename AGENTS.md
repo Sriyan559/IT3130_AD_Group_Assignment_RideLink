@@ -40,34 +40,38 @@ without relying on chat memory. This file applies throughout this repository.
 - Keep changes focused on the requested component and preserve unrelated user changes.
 - Use meaningful commits for completed increments. Do not fabricate activity for history.
 
-## Current state (last checked 2026-09-26)
+## Current state (last checked 2026-09-27)
 
 - Implemented: `POST /api/drivers`, `GET /api/drivers/{driverId}` and
-  `POST /api/drivers/{driverId}/vehicles`.
+  `POST /api/drivers/{driverId}/vehicles` and `PUT /api/drivers/{driverId}/availability`.
+- Availability accepts AVAILABLE/OFFLINE, atomically updates only the status, supports
+  repeated requests and rejects toggles for ON_TRIP drivers with 409 DRIVER_ON_TRIP.
 - Vehicle registration checks driver existence, validates attributes, normalizes plates
   and uses a unique MongoDB plate index. It does not change driver availability.
 - Creation includes validation, normalization, initial OFFLINE status, MongoDB persistence
   and unique account/licence indexes. Lookup includes a structured missing-driver error.
 - Error responses cover invalid requests, duplicate profiles, missing profiles and
   database access failures.
-- Latest verification: `mvn -B -pl driver-vehicle-service -am verify` passed 51 tests
-  with zero failures/errors/skips on 2026-09-26, using local JDK 21 and Java 17 compilation target.
-  Tests use mocks; live MongoDB behavior was not verified in that run.
+- Latest verification: `mvn -B -pl driver-vehicle-service -am verify` with
+  `RIDELINK_MONGO_TESTS=true` passed 79 tests with zero failures/errors/skips on
+  2026-09-27, using local JDK 21 and Java 17 compilation target. Includes three live
+  HTTP/MongoDB tests against an isolated database that was dropped after testing.
 - Subsequent live smoke checks on 2026-09-26 passed against local MongoDB in the
   isolated database `driver_db_smoke_20260926152647`: driver create/read, vehicle
   registration, normalized duplicate rejection, missing driver and invalid capacity.
   Swagger returned 200; registration preserved OFFLINE status. Concurrent requests remain untested.
 - Authentication, ownership checks and Account Service verification are pending.
-- Planned documentation uses `/api/v1/drivers`, while implemented local endpoints use
-  `/api/drivers`. Reconcile the route contract before integration.
+- API documentation now distinguishes implemented `/api/drivers` endpoints from proposed
+  `/api/v1/drivers` routes. Agree on versioning before integration.
 - Guides: [creation](driver-vehicle-service/docs/driver-profile-create.md),
   [lookup](driver-vehicle-service/docs/driver-profile-get.md),
-  [vehicle registration](driver-vehicle-service/docs/vehicle-registration.md).
+  [vehicle registration](driver-vehicle-service/docs/vehicle-registration.md),
+  [availability](driver-vehicle-service/docs/driver-availability.md).
 
 ## Next work (planned, not implemented)
 
-- Choose the next small Driver & Vehicle increment: availability
-  updates, simulated location updates or eligible-driver queries.
+- Choose the next small Driver & Vehicle increment: simulated location updates
+  followed by eligible-driver queries.
 - Add appropriate validation, error handling, tests and usage documentation for each increment.
 - Add repeatable integration/concurrency tests for MongoDB constraints.
 - Agree on versioned routes, identity/security and eligibility rules with the other service owners.
@@ -187,6 +191,38 @@ Shared repository setup is not a claim of individual contribution by the current
   manager requires interactive sign-in (`unable to get password from user`). The user
   needs to run `git push` in their terminal and complete GitHub authentication.
 - Next feature remains availability updates; no availability implementation was added today.
+
+### 2026-09-27 - Review next development increment
+
+- Reviewed branch, working tree, recent history and availability references in source/docs.
+- Confirmed the student-ID branch was clean and matched its local remote-tracking
+  reference at `8fe3e59`; no fresh remote fetch was performed.
+- Recommended availability updates as today's increment, followed by validation,
+  tests, usage documentation and a live smoke check. Implementation remains planned.
+- Route versioning and the documented ON_TRIP status need reconciliation with the
+  AVAILABLE/OFFLINE toggle contract before implementation.
+- Verification: inspection only; application tests not rerun. This log update is local
+  and uncommitted.
+
+### 2026-09-27 - Driver availability updates
+
+- Added `PUT /api/drivers/{driverId}/availability`, validated AVAILABLE/OFFLINE input,
+  atomic status-only MongoDB updates and the updated profile response. Repeated requests
+  succeed; missing drivers return 404, ON_TRIP conflicts 409 and database failures safe 503.
+- Added `UpdateAvailabilityRequest`, `DriverAvailabilityService`, `DriverOnTripException`,
+  controller/advice handling, 25 unit/HTTP cases and three opt-in live MongoDB tests.
+- Added the availability guide and updated documentation indexes/API specification to
+  distinguish implemented unversioned routes from the future versioning proposal.
+  Authorization, vehicle eligibility and trip assignment integration remain pending.
+- Verification: initial mock-only Maven verify passed 76 tests. Final Maven verify with
+  `RIDELINK_MONGO_TESTS=true` passed all 79 tests, zero failures/errors/skips. Live tests
+  verified both transitions, idempotence, profile preservation/read-back, invalid target,
+  ON_TRIP protection, missing driver and Swagger 200. The isolated test database was
+  dropped. Concurrent requests and live database outages remain untested.
+- `git diff --check` and the staged whitespace check passed.
+- Git: committed locally on the original student-ID branch. Push failed because Git
+  could not obtain the GitHub username with interactive prompts disabled. No remote
+  availability commit was confirmed. Run `git push` in a terminal and complete sign-in.
 
 ## Entry template
 

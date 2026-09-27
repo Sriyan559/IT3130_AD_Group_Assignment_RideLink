@@ -53,6 +53,12 @@ public class ApiExceptionHandler {
                 "A vehicle with this plate number already exists", request);
     }
 
+    @ExceptionHandler(DriverOnTripException.class)
+    public ResponseEntity<ApiError> driverOnTrip(HttpServletRequest request) {
+        return error(HttpStatus.CONFLICT, "DRIVER_ON_TRIP",
+                "Availability cannot be changed while the driver is on a trip", request);
+    }
+
     private ResponseEntity<ApiError> error(HttpStatus status, String code, String message,
                                            HttpServletRequest request) {
         return ResponseEntity.status(status).body(new ApiError(Instant.now(), status.value(),

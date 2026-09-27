@@ -6,6 +6,7 @@ import com.ridelink.driver.dto.request.CreateDriverRequest;
 import com.ridelink.driver.dto.response.DriverResponse;
 import com.ridelink.driver.exception.DriverNotFoundException;
 import com.ridelink.driver.service.DriverService;
+import com.ridelink.driver.service.DriverAvailabilityService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -26,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class DriverControllerTest {
     @Autowired private MockMvc mvc;
     @MockBean private DriverService service;
+    @MockBean private DriverAvailabilityService availabilityService;
 
     private static final String VALID = """
             {"accountId":"account-1","licenseNumber":"B1234567","serviceArea":"Malabe"}

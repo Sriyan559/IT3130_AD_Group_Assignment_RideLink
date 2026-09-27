@@ -5,9 +5,19 @@
 **Swagger UI:** http://localhost:8082/swagger-ui/index.html
 **OpenAPI Spec:** http://localhost:8082/v3/api-docs
 
-### Planned Endpoints:
-- POST /api/v1/drivers (Create Operational Profile)
-- POST /api/v1/drivers/{driverId}/vehicles (Register Vehicle)
-- PUT /api/v1/drivers/{driverId}/availability (Toggle AVAILABLE/OFFLINE)
+### Implemented local endpoints
+
+- POST /api/drivers (Create Operational Profile)
+- GET /api/drivers/{driverId} (Retrieve Operational Profile)
+- POST /api/drivers/{driverId}/vehicles (Register Vehicle)
+- PUT /api/drivers/{driverId}/availability (Set AVAILABLE/OFFLINE; ON_TRIP drivers return 409)
+
+See the [availability contract and verification guide](../../../driver-vehicle-service/docs/driver-availability.md).
+Implemented endpoints consistently use `/api/drivers`. The earlier `/api/v1/drivers`
+proposal is not implemented; a coordinated versioning decision remains pending before integration.
+ON_TRIP is reserved for future ride operations, not a driver-selected availability value.
+
+### Planned endpoints (routes subject to integration agreement)
+
 - PUT /api/v1/drivers/{driverId}/location (Update Simulated Coordinates)
 - GET /api/v1/drivers/eligible (Query Available Drivers in Radius)

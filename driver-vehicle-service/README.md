@@ -3,7 +3,7 @@
 **IT3130 – Application Development: Group Assignment**  
 **Component:** Driver & Vehicle Service Microservice  
 **Primary Owner:** Rathnakoon D A (Student ID: IT24300246)  
-**Status:** `IN PROGRESS / DRIVER PROFILES AND VEHICLE REGISTRATION IMPLEMENTED`
+**Status:** `IN PROGRESS / DRIVER PROFILES, VEHICLE REGISTRATION AND AVAILABILITY IMPLEMENTED`
 
 The first increment implements `POST /api/drivers`, MongoDB persistence, request validation,
 duplicate account/licence protection and automated tests. See [the first API guide](docs/driver-profile-create.md).
@@ -11,6 +11,8 @@ The second increment adds `GET /api/drivers/{driverId}` with profile lookup, mis
 and automated tests. See [the lookup guide](docs/driver-profile-get.md).
 The third increment adds `POST /api/drivers/{driverId}/vehicles` with validation and
 unique normalized plates. See [the vehicle registration guide](docs/vehicle-registration.md).
+The fourth increment adds `PUT /api/drivers/{driverId}/availability` for AVAILABLE/OFFLINE
+updates with ON_TRIP protection. See [the availability guide](docs/driver-availability.md).
 The responsibilities below describe the full planned service; other endpoints and authentication integration remain pending.
 
 ---
