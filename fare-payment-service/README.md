@@ -3,7 +3,7 @@
 **IT3130 – Application Development: Group Assignment**  
 **Component:** Fare & Payment Service Microservice  
 **Primary Owner:** Sanjeewa H.D.U.S (Student ID: IT24101590)  
-**Status:** `FARE ESTIMATES IMPLEMENTED / PAYMENT FLOW NOT IMPLEMENTED`
+**Status:** `FARE ESTIMATES, FINAL FARES, AND SIMULATED PAYMENTS IMPLEMENTED`
 
 ---
 
@@ -11,8 +11,8 @@
 - Upfront fare estimation based on simulated distance, estimated duration, and base rules
 - Final fare calculation upon trip completion using documented formula
 - Simulated payment execution and transaction recording
-- Payment status lifecycle (`PENDING`, `COMPLETED`, `FAILED`, `REFUNDED`)
-- Immutable receipt generation, invoice breakdown, and receipt retrieval
+- Payment status (`SUCCESS` or `FAILED`)
+- Transaction reference and payment retrieval
 
 The fare rule is Rs. 150 base fare plus Rs. 100 per kilometer. Distances must be
 positive, and calculated fares are rounded to two decimal places.
@@ -30,6 +30,35 @@ Response:
 ```json
 {"distanceKilometers": 8, "estimatedFare": 950.00, "currency": "LKR"}
 ```
+
+### Final Fare API
+
+`POST /api/fares/final` calculates and stores one final fare per ride. The request
+uses the ride service's stable ride ID; no cross-service database access is used.
+
+```json
+{"rideId": "<ride-uuid>", "distanceKilometers": 8}
+```
+
+`GET /api/fares/final/{rideId}` retrieves the persisted fare breakdown.
+
+### Simulated Payment API
+
+`POST /api/payments` records a payment attempt. Set `simulateFailure` to `true`
+to persist a `FAILED` attempt; otherwise the simulated result is `SUCCESS`.
+
+```json
+{
+	"rideId": "<ride-uuid>",
+	"passengerId": "<passenger-uuid>",
+	"amount": 950.00,
+	"paymentMethod": "CARD",
+	"simulateFailure": false
+}
+```
+
+`GET /api/payments/{paymentId}` retrieves the stored result. Payments use
+`payment_db`; Flyway creates the fare and payment tables at startup.
 
 ## 2. Technology & Architecture
 - **Language:** Java 17
@@ -61,8 +90,14 @@ src/main/java/com/ridelink/payment/
 ```
 
 ## 4. Database Isolation
-- Dedicated database: `payment_db` (PostgreSQL)
-- **Constraint:** Strictly isolated. No other microservice can query or modify `payment_db`. Trip completion and payment triggers are initiated via REST API calls from `Ride Management Service`.
+- Dedicated database: `payment_db` (PostgreSQL), migrated by Flyway.
+- `fare_records` stores a final fare breakdown and unique ride ID.
+- `payments` stores every simulated payment attempt, its status, transaction reference, and timestamps.
+- Other services may provide stable identifiers through APIs but cannot query or modify this database.
+
+The final-fare endpoint accepts a ride ID and distance after ride completion. The payment endpoint
+stores `SUCCESS` by default or `FAILED` when `simulateFailure` is true. Failed attempts have no
+`paidAt` timestamp; both outcomes remain retrievable by payment ID.
 
 ## 5. Build and Run
 ```bash
@@ -72,4 +107,4 @@ mvn clean package -DskipTests
 # Run independently
 mvn spring-boot:run
 ```
-*(Payment processing, persistence, and receipt retrieval remain to be implemented.)*
+*(Receipt generation/retrieval and payment retries remain to be implemented.)*
