@@ -12,6 +12,9 @@
 - POST /api/drivers/{driverId}/vehicles (Register Vehicle)
 - PUT /api/drivers/{driverId}/availability (Set AVAILABLE/OFFLINE; ON_TRIP drivers return 409)
 
+- PUT /api/drivers/{driverId}/location (Update Simulated Coordinates)
+
+See the [location contract and verification guide](../../../driver-vehicle-service/docs/driver-location.md).
 See the [availability contract and verification guide](../../../driver-vehicle-service/docs/driver-availability.md).
 Implemented endpoints consistently use `/api/drivers`. The earlier `/api/v1/drivers`
 proposal is not implemented; a coordinated versioning decision remains pending before integration.
@@ -19,5 +22,4 @@ ON_TRIP is reserved for future ride operations, not a driver-selected availabili
 
 ### Planned endpoints (routes subject to integration agreement)
 
-- PUT /api/v1/drivers/{driverId}/location (Update Simulated Coordinates)
 - GET /api/v1/drivers/eligible (Query Available Drivers in Radius)

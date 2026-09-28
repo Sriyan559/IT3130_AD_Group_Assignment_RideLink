@@ -13,4 +13,5 @@ This directory contains specifications, schema models, and location simulation l
 - [Retrieve a driver profile](driver-profile-get.md)
 - [Register a vehicle](vehicle-registration.md)
 - [Update driver availability](driver-availability.md)
+- [Update simulated driver location](driver-location.md)
 - [Project instructions and dated work log](../../AGENTS.md)

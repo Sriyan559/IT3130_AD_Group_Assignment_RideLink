@@ -4,7 +4,7 @@ Owner: Rathnakoon D A (IT24300246).
 
 Implemented: `POST /api/drivers`, MongoDB persistence, validation, unique account/licence constraints, error responses and automated unit/HTTP contract tests.
 
-This is an incremental local development endpoint. Authentication, role/ownership checks and validation of the referenced account against Account Service are not implemented yet. Do not treat it as a completed secured service. Vehicle, location, availability-update and driver-search APIs are subsequent increments.
+This is an incremental local development endpoint. Authentication, role/ownership checks and validation of the referenced account against Account Service are not implemented yet. Do not treat it as a completed secured service. Vehicle registration, availability and location updates are implemented as later increments; driver search remains planned.
 
 ## Run and test
 
