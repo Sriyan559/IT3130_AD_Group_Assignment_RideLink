@@ -1,4 +1,4 @@
 /**
- * Spring Data JPA repositories for Ride Management Service.
+ * Spring Data MongoDB repositories for Ride Management Service.
  */
 package com.ridelink.ride.repository;

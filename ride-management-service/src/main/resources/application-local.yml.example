@@ -5,14 +5,9 @@ server:
   port: 8083
 
 spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/ride_db
-    username: postgres
-    password: local_dev_password
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/ride_db
 
 services:
   account:
