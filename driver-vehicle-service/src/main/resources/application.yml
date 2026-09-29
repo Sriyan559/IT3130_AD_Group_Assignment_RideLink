@@ -1,3 +1,8 @@
+driver:
+  search:
+    # Set to 0 only for demos that deliberately allow old locations.
+    max-location-age-seconds: ${DRIVER_LOCATION_MAX_AGE_SECONDS:300}
+
 server:
   port: ${DRIVER_SERVICE_PORT:8082}
 

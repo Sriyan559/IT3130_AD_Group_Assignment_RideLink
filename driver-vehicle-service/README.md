@@ -3,7 +3,7 @@
 **IT3130 – Application Development: Group Assignment**  
 **Component:** Driver & Vehicle Service Microservice  
 **Primary Owner:** Rathnakoon D A (Student ID: IT24300246)  
-**Status:** `IN PROGRESS / DRIVER PROFILES, VEHICLES, AVAILABILITY AND LOCATION IMPLEMENTED`
+**Status:** `IN PROGRESS / DRIVER PROFILES, VEHICLES, AVAILABILITY, LOCATION AND DRIVER SEARCH IMPLEMENTED`
 
 The first increment implements `POST /api/drivers`, MongoDB persistence, request validation,
 duplicate account/licence protection and automated tests. See [the first API guide](docs/driver-profile-create.md).
@@ -15,6 +15,8 @@ The fourth increment adds `PUT /api/drivers/{driverId}/availability` for AVAILAB
 updates with ON_TRIP protection. See [the availability guide](docs/driver-availability.md).
 The fifth increment adds `PUT /api/drivers/{driverId}/location` with validated coordinates,
 a server timestamp and atomic location-only updates. See [the location guide](docs/driver-location.md).
+The sixth increment adds `GET /api/drivers/eligible` for nearby AVAILABLE drivers with
+registered vehicles and fresh locations. See [the eligible-driver guide](docs/eligible-drivers.md).
 The responsibilities below describe the full planned service; other endpoints and authentication integration remain pending.
 
 ---

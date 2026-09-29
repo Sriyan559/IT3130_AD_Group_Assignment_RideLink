@@ -20,6 +20,8 @@ public class VehicleIndexes implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         mongoTemplate.indexOps(Vehicle.class).ensureIndex(new Index()
+                .on("driverId", Sort.Direction.ASC).named("vehicle_driver_lookup"));
+        mongoTemplate.indexOps(Vehicle.class).ensureIndex(new Index()
                 .on("plateNumber", Sort.Direction.ASC).unique().named("vehicle_plate_unique"));
     }
 }

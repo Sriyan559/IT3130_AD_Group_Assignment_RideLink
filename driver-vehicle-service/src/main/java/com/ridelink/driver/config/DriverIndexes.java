@@ -20,6 +20,8 @@ public class DriverIndexes implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         var indexes = mongoTemplate.indexOps(Driver.class);
+        indexes.ensureIndex(new Index().on("availabilityStatus", Sort.Direction.ASC)
+                .on("location.updatedAt", Sort.Direction.DESC).named("driver_search_status_time"));
         indexes.ensureIndex(new Index().on("accountId", Sort.Direction.ASC)
                 .unique().named("driver_account_unique"));
         indexes.ensureIndex(new Index().on("licenseNumber", Sort.Direction.ASC)

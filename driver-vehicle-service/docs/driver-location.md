@@ -55,8 +55,8 @@ older documents without coordinates have `location: null`.
 - Missing drivers return `404 DRIVER_NOT_FOUND`; no profile is created implicitly.
 - Database access failures return the existing safe `503 DATABASE_UNAVAILABLE`.
 
-Authentication, ownership checks, automatic GPS simulation, location history,
-freshness policies and nearby-driver queries remain pending. This endpoint accepts
+Authentication, ownership checks, automatic GPS simulation and location history remain pending.
+[Eligible-driver search](eligible-drivers.md) uses a configurable freshness policy (default five minutes). This endpoint accepts
 manually simulated coordinates and does not change driver eligibility.
 
 ## Verification

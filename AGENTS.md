@@ -44,7 +44,11 @@ without relying on chat memory. This file applies throughout this repository.
 
 - Implemented: `POST /api/drivers`, `GET /api/drivers/{driverId}` and
   `POST /api/drivers/{driverId}/vehicles`, `PUT /api/drivers/{driverId}/availability`
-  and `PUT /api/drivers/{driverId}/location`.
+  `PUT /api/drivers/{driverId}/location` and `GET /api/drivers/eligible`.
+- Eligible-driver search uses required lat/lng/radius (km, greater than 0 up to 50),
+  AVAILABLE status, a registered vehicle and location age at most 300 seconds. Returns
+  nearest-first results with distance/vehicles, or 200 []; read-only, no reservation.
+  Freshness is configurable through DRIVER_LOCATION_MAX_AGE_SECONDS.
 - Location accepts valid latitude/longitude in every availability state, atomically
   replaces only the latest location and adds a server UTC timestamp. Profile responses
   include nullable location; older documents remain readable.
@@ -57,8 +61,8 @@ without relying on chat memory. This file applies throughout this repository.
 - Error responses cover invalid requests, duplicate profiles, missing profiles and
   database access failures.
 - Latest verification: `mvn -B -pl driver-vehicle-service -am verify` with
-  `RIDELINK_MONGO_TESTS=true` passed 108 tests with zero failures/errors/skips on
-  2026-09-28, using local JDK 21 and Java 17 compilation target. Includes six live
+  `RIDELINK_MONGO_TESTS=true` passed 142 tests with zero failures/errors/skips on
+  2026-09-29, using local JDK 21 and Java 17 compilation target. Includes eight live
   HTTP/MongoDB tests against isolated databases that were dropped after testing,
   including concurrent location/availability updates.
 - Earlier live smoke checks on 2026-09-26 passed against local MongoDB in the
@@ -67,21 +71,25 @@ without relying on chat memory. This file applies throughout this repository.
   Swagger returned 200; registration preserved OFFLINE status. Concurrent vehicle
   registration remains untested.
 - Authentication, ownership checks and Account Service verification are pending.
-- Postman collection covers the five implemented endpoints with ten requests and
-  17 assertions, verified through Newman on September 29. User-operated Postman
-  checks and Compass screenshots also confirmed persisted driver/vehicle test data.
+- Postman collection now includes search requests 05a/05b/10a, covering six endpoints.
+  Latest Newman verification passed 13 requests and 23 assertions on September 29.
+  Earlier user-operated Postman checks and Compass screenshots confirmed persisted
+  driver/vehicle test data.
 - API documentation now distinguishes implemented `/api/drivers` endpoints from proposed
   `/api/v1/drivers` routes. Agree on versioning before integration.
 - Guides: [creation](driver-vehicle-service/docs/driver-profile-create.md),
   [lookup](driver-vehicle-service/docs/driver-profile-get.md),
   [vehicle registration](driver-vehicle-service/docs/vehicle-registration.md),
   [availability](driver-vehicle-service/docs/driver-availability.md),
-  [location](driver-vehicle-service/docs/driver-location.md).
+  [location](driver-vehicle-service/docs/driver-location.md),
+  [eligible drivers](driver-vehicle-service/docs/eligible-drivers.md).
 
 ## Next work (planned, not implemented)
 
-- Next Driver & Vehicle increment: eligible-driver queries using stored locations;
-  agree on radius, vehicle requirements and location freshness before implementation.
+- Next Driver & Vehicle increment: agree on Ride Management reservation/status API
+  and identity/ownership integration. Search alone does not reserve a driver.
+- Confirm search contract and defaults with service owners; geospatial indexing and
+  pagination remain future scalability work for larger datasets.
 - Add appropriate validation, error handling, tests and usage documentation for each increment.
 - Add repeatable integration/concurrency tests for MongoDB constraints.
 - Agree on versioned routes, identity/security and eligibility rules with the other service owners.
@@ -353,6 +361,50 @@ Shared repository setup is not a claim of individual contribution by the current
   original student-ID branch. Push failed because GitHub sign-in requires interactive
   prompts. Recorded this outcome by amending the local commit. User must run
   `git push` in a terminal and complete sign-in; no remote test-artifact commit confirmed.
+
+### 2026-09-29 - Eligible-driver search
+
+- Implemented `GET /api/drivers/eligible?lat={lat}&lng={lng}&radius={km}` with required
+  coordinate/radius validation, nearest-first results and one result per driver with
+  vehicle details. No matches returns 200 []; invalid query 400 and database failure 503.
+- User explicitly confirmed a 50 km maximum radius, registered vehicle requirement
+  and five-minute location freshness. Only AVAILABLE drivers qualify; missing/stale/
+  future locations are excluded. Configuration can change freshness (0 permits old
+  locations for demos). Search does not reserve drivers or alter stored documents.
+- Added service/controller/DTOs, Haversine distance utility, injectable clock and
+  status/timestamp plus vehicle-driver indexes. Existing coordinate schema is preserved.
+  Candidate distance filtering is in Java; larger deployments need geospatial queries
+  and pagination. Authentication and interservice reservation remain pending.
+- Added 34 tests. Initial verify passed all 142 tests but packaging failed because
+  the running demo held the JAR open. Verified and stopped that demo process (3484),
+  then `mvn -B -pl driver-vehicle-service -am clean verify` with RIDELINK_MONGO_TESTS=true
+  succeeded: 142 tests, zero failures/errors/skips. Eight live tests used isolated
+  databases which were dropped. `git diff --check` passed.
+- Restarted updated demo on localhost:8082, PID 26912, using retained database
+  driver_db_postman_20260929. Newman passed all 13 requests/23 assertions, including
+  eligible match, invalid radius and OFFLINE exclusion. One additional synthetic
+  driver/vehicle pair was retained. Service left running for user testing.
+- Updated Postman collection, service/API docs and eligibility guide. Re-import the
+  collection for new requests 05a/05b/10a; refresh availability and location before
+  a manual search after a pause. Prior test-artifact commit is bf153b5; local tracking
+  reference matches it (no fresh remote check in this increment).
+- Git: eligible-driver implementation and documentation are local and uncommitted.
+  No commit or push performed for this increment.
+
+### 2026-09-29 - Verify manual demo driver and prepare search commit
+
+- At the user's request, set their existing synthetic Postman driver to AVAILABLE,
+  refreshed coordinates 6.9271/79.8612 and queried eligible drivers via HTTP. All
+  returned 200; search included the same driver at 0 km with plate PM1790697769832.
+  Left this demo driver AVAILABLE; its location naturally expires after five minutes.
+- Postman desktop import remains unperformed because Computer Use native pipe is
+  unavailable. The updated collection's prior Newman run passed 13 requests/23
+  assertions; the unchanged application suite previously passed 142 tests.
+- Fresh fetch succeeded and whitespace checks passed. Committed eligible-search
+  code, tests, collection and documentation on the student-ID branch. Push failed
+  because GitHub username/sign-in requires interactive prompts. Amended the local
+  commit to record the outcome; user must run `git push` and sign in. Integration
+  and reservation work remain pending.
 
 ## Entry template
 

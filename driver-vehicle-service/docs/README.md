@@ -17,3 +17,4 @@ This directory contains specifications, schema models, and location simulation l
 - [Project instructions and dated work log](../../AGENTS.md)
 
 - [Test the implemented APIs in Postman](postman-testing.md)
+- [Find eligible nearby drivers](eligible-drivers.md)

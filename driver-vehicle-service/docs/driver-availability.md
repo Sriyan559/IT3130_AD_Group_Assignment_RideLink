@@ -21,7 +21,8 @@ versioned routes remain a future integration decision.
   future ride integration and cannot be made through this endpoint.
 - Database failure: `503 DATABASE_UNAVAILABLE`, without internal database details.
 
-Authentication, ownership checks and vehicle/eligibility requirements remain pending.
+Authentication and ownership checks remain pending. Availability toggles do not require a vehicle;
+[eligible-driver search](eligible-drivers.md) separately requires a registered vehicle and fresh location.
 This increment allows an existing OFFLINE driver to become AVAILABLE without a vehicle.
 
 ## Try it locally

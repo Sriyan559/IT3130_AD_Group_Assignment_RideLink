@@ -2,7 +2,7 @@
   "info": {
     "name": "RideLink - Driver & Vehicle - IT24300246",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Run in order. Request 01 generates unique test data and saves driverId. Each run creates one driver and vehicle. Uses local port 8082. Eligible-driver search is not implemented."
+    "description": "Run in collection order: 01-05, 05a, 05b, 06-10, 10a. Request 01 generates unique data and saves driverId. Each run creates one driver and vehicle. Search requires AVAILABLE, a vehicle and a location updated within 5 minutes. Refresh request 05 before 05a if testing manually after a pause."
   },
   "variable": [
     {
@@ -191,6 +191,46 @@
       ]
     },
     {
+      "name": "05a Find eligible drivers",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/drivers/eligible?lat=6.9271&lng=79.8612&radius=5"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Our AVAILABLE driver is eligible\", () => { const d=pm.response.json().find(x => x.driverId === pm.collectionVariables.get(\"driverId\")); pm.expect(d).to.be.an(\"object\"); pm.expect(d.distanceKm).to.be.closeTo(0, 0.001); pm.expect(d.vehicles.length).to.be.above(0); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05b Invalid search radius rejected",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/drivers/eligible?lat=6.9271&lng=79.8612&radius=51"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"Validation error\", () => pm.expect(pm.response.json().error).to.eql(\"VALIDATION_ERROR\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "06 Read back location",
       "request": {
         "method": "GET",
@@ -335,6 +375,26 @@
             "exec": [
               "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
               "pm.test(\"OFFLINE\", () => pm.expect(pm.response.json().availabilityStatus).to.eql(\"OFFLINE\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10a OFFLINE driver excluded from search",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/drivers/eligible?lat=6.9271&lng=79.8612&radius=5"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Our OFFLINE driver is excluded\", () => pm.expect(pm.response.json().some(d => d.driverId === pm.collectionVariables.get(\"driverId\"))).to.eql(false));"
             ]
           }
         }
