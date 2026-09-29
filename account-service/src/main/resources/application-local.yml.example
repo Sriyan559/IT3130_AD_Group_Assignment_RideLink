@@ -5,16 +5,13 @@ server:
   port: 8081
 
 spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/account_db
-    username: postgres
-    password: local_dev_password
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}
+      database: ${MONGODB_DATABASE:ridelink_account_db}
+      auto-index-creation: true
 
 security:
   jwt:
-    secret: your_local_testing_secret_key_minimum_256_bits_for_hmac_sha256
-    expiration-ms: 86400000
+    secret: ${JWT_SECRET}
+    expiration-ms: ${JWT_EXPIRATION_MS:3600000}
