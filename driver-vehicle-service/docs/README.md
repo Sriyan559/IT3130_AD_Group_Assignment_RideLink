@@ -18,3 +18,4 @@ This directory contains specifications, schema models, and location simulation l
 
 - [Test the implemented APIs in Postman](postman-testing.md)
 - [Find eligible nearby drivers](eligible-drivers.md)
+- [Integration handoff and compatibility review](integration-handoff.md)

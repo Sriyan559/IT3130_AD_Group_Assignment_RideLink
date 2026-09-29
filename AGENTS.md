@@ -86,6 +86,11 @@ without relying on chat memory. This file applies throughout this repository.
 
 ## Next work (planned, not implemented)
 
+- Integration review found Ride uses Long external IDs while Driver and Account use
+  String IDs. Align Ride DTO/document/controller/repository types with its owner first.
+  See driver-vehicle-service/docs/integration-handoff.md for concrete contracts and gaps.
+  A tested fix is now committed locally as e71492d on fix/ride-external-string-ids
+  in sibling worktree C:/Users/mashi/Desktop/RideLink-ride-id-fix; merge/push pending.
 - Next Driver & Vehicle increment: agree on Ride Management reservation/status API
   and identity/ownership integration. Search alone does not reserve a driver.
 - Confirm search contract and defaults with service owners; geospatial indexing and
@@ -405,6 +410,65 @@ Shared repository setup is not a claim of individual contribution by the current
   because GitHub username/sign-in requires interactive prompts. Amended the local
   commit to record the outcome; user must run `git push` and sign in. Integration
   and reservation work remain pending.
+
+### 2026-09-29 - Investigate empty Postman search response
+
+- User screenshots showed successful location update but an empty displayed search
+  response. Read-only live HTTP checks at 17:58 UTC returned the user's new AVAILABLE
+  driver with location timestamp 17:56:41.846Z, and search returned that driver at
+  0 km with its Toyota Aqua. Both requests returned 200; no data was modified.
+- The displayed empty response may predate the update; advised sending the search
+  request again rather than only selecting its tab. No application defect reproduced.
+- Verification: live profile/search GETs only; no code changes or tests rerun.
+- Git: investigation log is local and uncommitted.
+
+### 2026-09-29 - User-operated eligible-search verification
+
+- User screenshots confirmed updated location followed by 05a search returning 200
+  with the same driver, 0 km distance and registered Toyota Aqua. The earlier empty
+  displayed response was resolved after resending location and search requests.
+- 05b returned 400 VALIDATION_ERROR for radius 51 (2/2 tests); 10 returned 200 with
+  OFFLINE and unchanged location (2/2); 10a returned 200 [] (2/2). These are manual
+  Postman screenshots, not a new exported collection run. No application changes or
+  automated tests rerun; existing 142-test and 23-assertion results remain applicable.
+- Remaining: interservice identity/ownership and reservation integration. Local HEAD
+  is cd34269 and matches the local remote-tracking reference; no fresh fetch performed.
+- Git: preserved prior investigation entry; these work-log updates are uncommitted.
+
+### 2026-09-29 - Review integration compatibility across service branches
+
+- Fresh fetch succeeded. Read Account branch 9fd1dea and Ride branch 9b34d37 without
+  merging or changing those components. Driver remains cd34269 on the student-ID branch.
+- Found a blocking contract mismatch: Ride uses Long passengerId/driverId in DTOs,
+  controller/service/repository; Account and Driver IDs are strings. Ride currently
+  assigns supplied IDs without an implemented Driver HTTP client/reservation call.
+- Account lookup requires owner/ADMIN JWT. Driver currently has no ownership/account
+  verification; the availability toggle is not an ON_TRIP reservation API.
+- Created docs/integration-handoff.md under Driver Service and linked the guide index:
+  evidence, required ID alignment, actual routes, account-auth proposals, reservation
+  semantics to agree and joint acceptance checks. No messages sent to other owners.
+- Verification: source inspection and documentation whitespace check only; no live
+  cross-service test or application test rerun. Integration is not complete.
+- Git: guide/index and accumulated verification log changes are local and uncommitted.
+
+### 2026-09-29 - Fix Ride external ID compatibility at user's request
+
+- User explicitly authorized fixing Ride Service after the compatibility explanation.
+  Created sibling worktree C:/Users/mashi/Desktop/RideLink-ride-id-fix on task branch
+  fix/ride-external-string-ids from freshly fetched Ride commit 9b34d37. Preserved
+  the original Driver branch and all its existing documentation/log changes.
+- Changed passengerId/driverId types throughout Ride DTOs, document/accessors,
+  controller, service and repository to String. Updated validation, OpenAPI examples,
+  README and Ride Postman samples. Ride/fare UUIDs and numeric duration are unchanged.
+- Verification: Maven verify with RIDELINK_MONGO_TESTS=true passed 15 tests, zero
+  failures/errors/skips: six existing lifecycle, eight new HTTP and one new local
+  MongoDB persistence/query test. Random isolated database was dropped. No cloud
+  database connected or existing records migrated. Whitespace checks passed.
+- Git: committed fix locally as e71492d on fix/ride-external-string-ids. Not pushed
+  or merged into the Ride owner's branch; that integration step remains. Main Driver
+  workspace documentation/log updates remain uncommitted.
+- Remaining: review/merge fix, deliberate handling of legacy numeric Ride references,
+  account/driver clients and reservation integration. Full integration is not complete.
 
 ## Entry template
 
