@@ -1,0 +1,3 @@
+$kind: collection
+description: Endpoints owned by Account Service (Port 8081). Handles registration, login, JWT issuance, roles, and profile management.
+order: 1000

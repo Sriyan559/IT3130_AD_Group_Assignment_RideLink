@@ -1,0 +1,18 @@
+name: RideLink - Local Environment
+values:
+  - key: account_url
+    value: 'http://localhost:8081'
+  - key: driver_url
+    value: 'http://localhost:8082'
+  - key: ride_url
+    value: 'http://localhost:8083'
+  - key: payment_url
+    value: 'http://localhost:8084'
+  - key: auth_token
+    value: ''
+  - key: passenger_id
+    value: '101'
+  - key: driver_id
+    value: '201'
+  - key: ride_id
+    value: ''

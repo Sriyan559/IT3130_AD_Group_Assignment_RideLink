@@ -1,0 +1,28 @@
+$kind: http-request
+description: Creates a temporary ride to demonstrate the cancellation flow.
+url: "{{ride_url}}/api/v1/rides"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "passengerId": 102,
+      "pickupLatitude": 6.9000,
+      "pickupLongitude": 79.8500,
+      "pickupAddress": "Bambalapitiya, Colombo 04",
+      "destinationLatitude": 6.9300,
+      "destinationLongitude": 79.8400,
+      "destinationAddress": "Galle Face Green, Colombo 03"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 201 Created", function () {
+          pm.response.to.have.status(201);
+      });
+      var jsonData = pm.response.json();
+      pm.environment.set("cancel_ride_id", jsonData.id);
+    language: text/javascript
+order: 11000
