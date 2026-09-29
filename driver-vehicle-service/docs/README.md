@@ -15,3 +15,5 @@ This directory contains specifications, schema models, and location simulation l
 - [Update driver availability](driver-availability.md)
 - [Update simulated driver location](driver-location.md)
 - [Project instructions and dated work log](../../AGENTS.md)
+
+- [Test the implemented APIs in Postman](postman-testing.md)

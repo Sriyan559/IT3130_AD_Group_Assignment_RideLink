@@ -40,7 +40,7 @@ without relying on chat memory. This file applies throughout this repository.
 - Keep changes focused on the requested component and preserve unrelated user changes.
 - Use meaningful commits for completed increments. Do not fabricate activity for history.
 
-## Current state (last checked 2026-09-28)
+## Current state (last checked 2026-09-29)
 
 - Implemented: `POST /api/drivers`, `GET /api/drivers/{driverId}` and
   `POST /api/drivers/{driverId}/vehicles`, `PUT /api/drivers/{driverId}/availability`
@@ -67,6 +67,9 @@ without relying on chat memory. This file applies throughout this repository.
   Swagger returned 200; registration preserved OFFLINE status. Concurrent vehicle
   registration remains untested.
 - Authentication, ownership checks and Account Service verification are pending.
+- Postman collection covers the five implemented endpoints with ten requests and
+  17 assertions, verified through Newman on September 29. User-operated Postman
+  checks and Compass screenshots also confirmed persisted driver/vehicle test data.
 - API documentation now distinguishes implemented `/api/drivers` endpoints from proposed
   `/api/v1/drivers` routes. Agree on versioning before integration.
 - Guides: [creation](driver-vehicle-service/docs/driver-profile-create.md),
@@ -287,6 +290,69 @@ Shared repository setup is not a claim of individual contribution by the current
   failed because Git could not obtain the GitHub username with terminal prompts
   disabled. Run `git push` in a terminal and complete sign-in. This outcome is
   included by amending the local commit; no remote location commit was confirmed.
+
+### 2026-09-28 - Review eligible-driver query as next increment
+
+- Reviewed branch/history, API plans and vehicle fields. Location commit `03f0b06`
+  matches the remote student-ID branch, confirmed with fresh `git ls-remote`; the
+  earlier push blockage is resolved. The working tree was clean on inspection.
+- Proposed next scope: `GET /api/drivers/eligible` with pickup coordinates and radius
+  in kilometres, AVAILABLE drivers with stored locations and registered vehicles,
+  nearest-first results and an empty list when no drivers match. These eligibility
+  rules are proposed, not implemented or agreed with other service owners.
+- Verification: source and Git inspection only; application tests not rerun.
+- Remaining: agree on radius limits and location freshness, implement query validation,
+  tests and usage documentation. This review log is local and uncommitted.
+
+### 2026-09-29 - Install Postman and prepare Driver API testing
+
+- Installed Postman 12.30.0 using winget and added the standalone
+  `postman/collections/Driver-Vehicle.postman_collection.json` with ten ordered
+  requests covering all five implemented endpoints, read-back and negative cases.
+  Creation generates unique sample values and saves driverId automatically.
+- Added `driver-vehicle-service/docs/postman-testing.md` and linked it from the
+  guide index. Existing shared collection and prior work-log changes were preserved.
+- Started the existing built service on localhost:8082 (PID 3484), with MongoDB on
+  localhost:27017 and isolated demo database `driver_db_postman_20260929`. Left it
+  running for manual Postman testing; synthetic driver/vehicle data is retained.
+- Verification: Newman executed the collection successfully: ten requests and 17
+  assertions, zero failures. Includes expected 400/409/404 responses. No Java code
+  changed and Maven tests were not rerun. `git diff --check` passed.
+- Desktop automation was unavailable (`Computer Use native pipe is unavailable`),
+  including after retry/reset. Postman UI import/run could not be verified; the
+  collection was verified through Newman, not through the desktop UI.
+- Git: collection, guide and work-log changes are local and uncommitted.
+
+### 2026-09-29 - User-operated Postman verification
+
+- Guided the user through importing the Driver & Vehicle collection and sending
+  requests 01-10 manually. Evidence is user-provided screenshots and response JSON,
+  not an agent-operated desktop run or an exported collection-run report.
+- Screenshots confirmed creation 201 (2/2 tests), lookup 200 (2/2), location response
+  200 (2/2), duplicate vehicle 409 VEHICLE_ALREADY_EXISTS (1/1), missing driver 404
+  DRIVER_NOT_FOUND (1/1), and final OFFLINE update 200 (2/2).
+- Supplied JSON showed the registered vehicle linked to the same driver, AVAILABLE
+  status, location read-back and invalid latitude 400 VALIDATION_ERROR. HTTP status
+  and test totals were not shown for every JSON-only response.
+- Final screenshot confirms OFFLINE retained latitude 6.9271, longitude 79.8612 and
+  the original location timestamp. No code changes or application tests rerun.
+- Remaining: eligible-driver search and integration work. Collection, guide and
+  work-log changes remain local and uncommitted on the student-ID branch.
+
+### 2026-09-29 - Compass verification and test-artifact commit preparation
+
+- User-supplied Compass screenshots/record text confirmed both test drivers and
+  vehicles in `driver_db_postman_20260929`. The manual Postman driver is OFFLINE
+  with coordinates 6.9271/79.8612 and the same timestamp returned by the API.
+  Its Toyota Aqua vehicle has plate PM1790697769832, capacity 4 and matching driverId.
+- Reviewed collection JSON and usage guide for committing the completed testing
+  increment. Prior Newman verification passed ten requests and 17 assertions; no
+  application code changed or application tests rerun. `git diff --check` passed.
+- Remaining: eligible-driver search and integration before the October 1 deadline.
+- Git: committed collection, guide/index and accumulated work-log updates on the
+  original student-ID branch. Push failed because GitHub sign-in requires interactive
+  prompts. Recorded this outcome by amending the local commit. User must run
+  `git push` in a terminal and complete sign-in; no remote test-artifact commit confirmed.
 
 ## Entry template
 

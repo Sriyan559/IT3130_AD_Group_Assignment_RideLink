@@ -1,0 +1,344 @@
+{
+  "info": {
+    "name": "RideLink - Driver & Vehicle - IT24300246",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Run in order. Request 01 generates unique test data and saves driverId. Each run creates one driver and vehicle. Uses local port 8082. Eligible-driver search is not implemented."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8082"
+    },
+    {
+      "key": "driverId",
+      "value": ""
+    },
+    {
+      "key": "runId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "01 Create driver",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/drivers",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"accountId\": \"postman-{{runId}}\",\n  \"licenseNumber\": \"PM-{{runId}}\",\n  \"serviceArea\": \"Colombo\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set(\"runId\", Date.now().toString());",
+              "pm.collectionVariables.unset(\"driverId\");"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "if (pm.response.code === 201) pm.collectionVariables.set(\"driverId\", pm.response.json().id);",
+              "pm.test(\"Initially OFFLINE\", () => pm.expect(pm.response.json().availabilityStatus).to.eql(\"OFFLINE\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 Get driver",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/drivers/{{driverId}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Correct driver\", () => pm.expect(pm.response.json().id).to.eql(pm.collectionVariables.get(\"driverId\")));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 Register vehicle",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/drivers/{{driverId}}/vehicles",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"plateNumber\": \"PM-{{runId}}\",\n  \"make\": \"Toyota\",\n  \"model\": \"Aqua\",\n  \"vehicleClass\": \"CAR\",\n  \"capacity\": 4\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 Set AVAILABLE",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/drivers/{{driverId}}/availability",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"availabilityStatus\": \"AVAILABLE\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"AVAILABLE\", () => pm.expect(pm.response.json().availabilityStatus).to.eql(\"AVAILABLE\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 Update location",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/drivers/{{driverId}}/location",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"latitude\": 6.9271,\n  \"longitude\": 79.8612\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Location saved and status preserved\", () => {const d=pm.response.json(); pm.expect(d.location.latitude).to.eql(6.9271); pm.expect(d.location.longitude).to.eql(79.8612); pm.expect(d.location.updatedAt).to.be.a(\"string\"); pm.expect(d.availabilityStatus).to.eql(\"AVAILABLE\");});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 Read back location",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/drivers/{{driverId}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Persisted location\", () => pm.expect(pm.response.json().location.latitude).to.eql(6.9271));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 Invalid location rejected",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/drivers/{{driverId}}/location",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"latitude\": 91,\n  \"longitude\": 0\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"Validation error\", () => pm.expect(pm.response.json().error).to.eql(\"VALIDATION_ERROR\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 Duplicate vehicle rejected",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/drivers/{{driverId}}/vehicles",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"plateNumber\": \"PM-{{runId}}\",\n  \"make\": \"Toyota\",\n  \"model\": \"Aqua\",\n  \"vehicleClass\": \"CAR\",\n  \"capacity\": 4\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 409\", () => pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 Missing driver",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/drivers/000000000000000000000001"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 404\", () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 Set OFFLINE",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/drivers/{{driverId}}/availability",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"availabilityStatus\": \"OFFLINE\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"OFFLINE\", () => pm.expect(pm.response.json().availabilityStatus).to.eql(\"OFFLINE\"));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
