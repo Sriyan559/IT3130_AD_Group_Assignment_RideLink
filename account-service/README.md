@@ -1,56 +1,70 @@
 # Account Service
 
-**IT3130 – Application Development: Group Assignment**  
-**Component:** Account Service Microservice  
-**Primary Owner:** Fernando B S C (Student ID: IT24103775)  
-**Status:** `STRUCTURE READY / NOT IMPLEMENTED`
+Owner: Fernando B S C - IT24103775
 
----
+The Account Service owns RideLink passenger/driver identity, credentials, roles, profiles, and account status. It does not own vehicle, availability, ride, fare, or payment data.
 
-## 1. Responsibilities
-- Passenger and driver account registration
-- Login and authentication token (JWT) issuance
-- Role management (`PASSENGER`, `DRIVER`, `ADMIN`)
-- User profile viewing and updating
-- Account lifecycle and status management (`ACTIVE`, `SUSPENDED`, `DEACTIVATED`)
+## Technology
 
-## 2. Technology & Architecture
-- **Language:** Java 17
-- **Framework:** Spring Boot 3.3.4
-- **Persistence:** PostgreSQL (`account_db`)
-- **API Documentation:** Springdoc OpenAPI / Swagger UI
-- **Port:** `8081` (configurable via `ACCOUNT_SERVICE_PORT`)
-- **Swagger URL:** `http://localhost:8081/swagger-ui/index.html`
-- **OpenAPI JSON:** `http://localhost:8081/v3/api-docs`
+- Java 17 and Spring Boot 3.3.4
+- Spring Security with signed JWT bearer authentication
+- Spring Data MongoDB and MongoDB Atlas
+- Bean Validation, Springdoc OpenAPI, JUnit 5, Mockito, Maven
 
-## 3. Package Structure
-```
-src/main/java/com/ridelink/account/
-├── AccountServiceApplication.java
-├── config/          # OpenAPI, Security, and App configurations
-├── controller/      # REST API endpoints
-├── dto/             # Request & Response Data Transfer Objects
-├── domain/          # Core domain models and enums
-├── entity/          # JPA entities mapped to account_db
-├── repository/      # Spring Data JPA repositories
-├── service/         # Service layer interfaces & implementations
-├── security/        # JWT utilities, filters, password encoders
-├── validation/      # Input validation constraints
-├── exception/       # Custom exceptions & global exception handler
-├── mapper/          # Entity-DTO mapping
-└── integration/     # Downstream client contracts
+## Prerequisites and configuration
+
+Install JDK 17 and Maven 3.9+, provision a MongoDB Atlas database, and set these environment variables. Never commit their real values.
+
+```text
+MONGODB_URI=<Atlas connection string>
+MONGODB_DATABASE=ridelink_account_db
+JWT_SECRET=<cryptographically random value of at least 32 bytes>
+JWT_EXPIRATION_MS=3600000
+ACCOUNT_SERVICE_PORT=8081
 ```
 
-## 4. Database Isolation
-- Dedicated database: `account_db`
-- **Constraint:** Cross-service database queries or joins are strictly forbidden. Other services must interact solely via REST APIs or stable identifiers.
+The service owns the `accounts` collection. A unique MongoDB index on normalized `email` is created through Spring Data mapping. Other services must retain stable account IDs and use API contracts rather than reading this database.
 
-## 5. Build and Run
-```bash
-# Build
-mvn clean package -DskipTests
+## Build, test, and run
 
-# Run independently
-mvn spring-boot:run
+From the repository root:
+
+```powershell
+mvn -pl account-service clean test
+mvn -pl account-service spring-boot:run
 ```
-*(Business logic not yet implemented; structure is prepared for subsequent phases)*
+
+Swagger UI: `http://localhost:8081/swagger-ui/index.html`
+
+OpenAPI JSON: `http://localhost:8081/v3/api-docs`
+
+Use Swagger's Authorize control with the JWT returned by login. The HTTP bearer scheme supplies the `Bearer` prefix.
+
+## API
+
+| Method | Path | Access | Purpose |
+|---|---|---|---|
+| POST | `/api/auth/register/passenger` | Public | Create an ACTIVE PASSENGER |
+| POST | `/api/auth/register/driver` | Public | Create an ACTIVE DRIVER identity |
+| POST | `/api/auth/login` | Public | Validate credentials/status and issue JWT |
+| GET | `/api/accounts/{id}` | Owner or ADMIN | View safe profile |
+| PUT | `/api/accounts/{id}` | Owner or ADMIN | Update full name and phone |
+| PATCH | `/api/accounts/{id}/status` | ADMIN | Set ACTIVE, SUSPENDED, or DISABLED |
+
+Registration never accepts a role or status. Profile updates cannot change email, role, status, ID, timestamps, or credentials. Passwords are BCrypt hashes and `passwordHash` is absent from every response DTO.
+
+## Roles and statuses
+
+Roles are `PASSENGER`, `DRIVER`, and `ADMIN`. Public registration can create only the first two. Statuses are `ACTIVE`, `SUSPENDED`, and `DISABLED`; only ACTIVE accounts can log in and authenticate requests.
+
+There is deliberately no public ADMIN registration endpoint. Provision an initial admin through a controlled operational process in a real deployment (for an assignment demo, seed one directly in the Account database with a BCrypt password hash).
+
+## Error contract
+
+Errors contain `timestamp`, HTTP `status`, stable `error` code, safe `message`, request `path`, and validation `fieldErrors`. Authentication failures do not expose whether an email exists.
+
+## Known limitations
+
+- Atlas connectivity and live endpoint smoke tests require user-supplied credentials and network access.
+- JWT revocation/refresh, email verification, password reset, login throttling, and MFA are production enhancements.
+- Admin bootstrap is intentionally outside the public API.

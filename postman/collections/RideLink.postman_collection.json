@@ -9,7 +9,35 @@
 		{
 			"name": "01 Account Service",
 			"description": "Endpoints owned by Account Service (Port 8081). Handles registration, login, JWT issuance, roles, and profile management.",
-			"item": []
+			"item": [
+				{
+					"name": "Register Passenger",
+					"event": [{"listen":"test","script":{"exec":["if (pm.response.code === 201) pm.environment.set('passenger_id', pm.response.json().id);"]}}],
+					"request": {"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"fullName\": \"Demo Passenger\",\n  \"email\": \"passenger@example.com\",\n  \"password\": \"Password123!\",\n  \"phone\": \"+94771234567\"\n}"},"url":{"raw":"{{account_service_url}}/api/auth/register/passenger","host":["{{account_service_url}}"],"path":["api","auth","register","passenger"]}}
+				},
+				{
+					"name": "Register Driver",
+					"event": [{"listen":"test","script":{"exec":["if (pm.response.code === 201) pm.environment.set('driver_id', pm.response.json().id);"]}}],
+					"request": {"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"fullName\": \"Demo Driver\",\n  \"email\": \"driver@example.com\",\n  \"password\": \"Password123!\",\n  \"phone\": \"+94777654321\"\n}"},"url":{"raw":"{{account_service_url}}/api/auth/register/driver","host":["{{account_service_url}}"],"path":["api","auth","register","driver"]}}
+				},
+				{
+					"name": "Login",
+					"event": [{"listen":"test","script":{"exec":["if (pm.response.code === 200) pm.environment.set('token', pm.response.json().token);"]}}],
+					"request": {"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"email\": \"passenger@example.com\",\n  \"password\": \"Password123!\"\n}"},"url":{"raw":"{{account_service_url}}/api/auth/login","host":["{{account_service_url}}"],"path":["api","auth","login"]}}
+				},
+				{
+					"name": "Get Account Profile",
+					"request": {"auth":{"type":"bearer","bearer":[{"key":"token","value":"{{token}}","type":"string"}]},"method":"GET","url":{"raw":"{{account_service_url}}/api/accounts/{{passenger_id}}","host":["{{account_service_url}}"],"path":["api","accounts","{{passenger_id}}"]}}
+				},
+				{
+					"name": "Update Account Profile",
+					"request": {"auth":{"type":"bearer","bearer":[{"key":"token","value":"{{token}}","type":"string"}]},"method":"PUT","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"fullName\": \"Updated Passenger\",\n  \"phone\": \"+94770000000\"\n}"},"url":{"raw":"{{account_service_url}}/api/accounts/{{passenger_id}}","host":["{{account_service_url}}"],"path":["api","accounts","{{passenger_id}}"]}}
+				},
+				{
+					"name": "Update Account Status",
+					"request": {"auth":{"type":"bearer","bearer":[{"key":"token","value":"{{token}}","type":"string"}]},"method":"PATCH","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"status\": \"SUSPENDED\"\n}"},"url":{"raw":"{{account_service_url}}/api/accounts/{{passenger_id}}/status","host":["{{account_service_url}}"],"path":["api","accounts","{{passenger_id}}","status"]}}
+				}
+			]
 		},
 		{
 			"name": "02 Driver & Vehicle Service",
@@ -39,8 +67,20 @@
 	],
 	"variable": [
 		{
-			"key": "account_url",
+			"key": "account_service_url",
 			"value": "http://localhost:8081"
+		},
+		{
+			"key": "token",
+			"value": ""
+		},
+		{
+			"key": "passenger_id",
+			"value": ""
+		},
+		{
+			"key": "driver_id",
+			"value": ""
 		},
 		{
 			"key": "driver_url",
