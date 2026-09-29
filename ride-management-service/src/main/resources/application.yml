@@ -6,7 +6,7 @@ spring:
     name: ride-management-service
   data:
     mongodb:
-      uri: ${RIDE_DB_URI:mongodb://localhost:27017/ride_db}
+      uri: ${RIDE_DB_URI:mongodb+srv://ridelink_ride:ride123@cluster0.8j37ck1.mongodb.net/ride_db?retryWrites=true&w=majority&appName=Cluster0}
 
 # Springdoc OpenAPI Configuration
 springdoc:
