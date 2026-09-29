@@ -1,3 +1,0 @@
-$kind: collection
-description: Sequential test workflow linking registration -> vehicle onboarding -> fare estimate -> ride booking -> driver assignment -> trip completion -> simulated payment and receipt generation.
-order: 5000

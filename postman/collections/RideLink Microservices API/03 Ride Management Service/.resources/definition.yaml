@@ -1,3 +1,0 @@
-$kind: collection
-description: Endpoints owned by Ride Management Service (Port 8083). Handles ride request creation, driver assignment, and status lifecycle.
-order: 3000

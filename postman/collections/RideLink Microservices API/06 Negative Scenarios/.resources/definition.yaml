@@ -1,3 +1,0 @@
-$kind: collection
-description: "Demonstrates error handling: no available driver, invalid state machine transition, unauthorized access, invalid input validation, and payment failures."
-order: 6000
