@@ -18,10 +18,10 @@ public class Ride {
     private UUID id;
 
     @Indexed
-    private Long passengerId;
+    private String passengerId;
 
     @Indexed
-    private Long driverId;
+    private String driverId;
 
     private BigDecimal pickupLatitude;
     private BigDecimal pickupLongitude;
@@ -56,11 +56,11 @@ public class Ride {
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
 
-    public Long getPassengerId() { return passengerId; }
-    public void setPassengerId(Long value) { passengerId = value; }
+    public String getPassengerId() { return passengerId; }
+    public void setPassengerId(String value) { passengerId = value; }
 
-    public Long getDriverId() { return driverId; }
-    public void setDriverId(Long value) { driverId = value; }
+    public String getDriverId() { return driverId; }
+    public void setDriverId(String value) { driverId = value; }
 
     public BigDecimal getPickupLatitude() { return pickupLatitude; }
     public void setPickupLatitude(BigDecimal value) { pickupLatitude = value; }

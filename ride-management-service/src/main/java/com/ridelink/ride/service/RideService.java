@@ -55,21 +55,21 @@ public class RideService {
         return rides.stream().map(mapper::toResponse).toList();
     }
 
-    public List<RideResponse> history(Long passengerId) {
+    public List<RideResponse> history(String passengerId) {
         return repository.findByPassengerIdOrderByCreatedAtDesc(passengerId)
                 .stream()
                 .map(mapper::toResponse)
                 .toList();
     }
 
-    public List<RideResponse> driverRides(Long driverId) {
+    public List<RideResponse> driverRides(String driverId) {
         return repository.findByDriverIdOrderByCreatedAtDesc(driverId)
                 .stream()
                 .map(mapper::toResponse)
                 .toList();
     }
 
-    public RideResponse assignDriver(UUID rideId, Long driverId) {
+    public RideResponse assignDriver(UUID rideId, String driverId) {
         Ride ride = find(rideId);
         if (ride.getStatus() == RideStatus.REQUESTED) {
             lifecycle.validate(ride.getStatus(), RideStatus.ASSIGNED);

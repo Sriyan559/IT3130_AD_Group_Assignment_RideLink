@@ -73,7 +73,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"passengerId\": 101,\n  \"pickupLatitude\": 6.9271,\n  \"pickupLongitude\": 79.8612,\n  \"pickupAddress\": \"Colombo Fort Railway Station, Colombo\",\n  \"destinationLatitude\": 6.9147,\n  \"destinationLongitude\": 79.8732,\n  \"destinationAddress\": \"SLIIT Metropolitan Campus, Colombo 03\",\n  \"driverId\": null\n}"
+          "raw": "{\n  \"passengerId\": \"6abbfa6d095b5451ceb2f209\",\n  \"pickupLatitude\": 6.9271,\n  \"pickupLongitude\": 79.8612,\n  \"pickupAddress\": \"Colombo Fort Railway Station, Colombo\",\n  \"destinationLatitude\": 6.9147,\n  \"destinationLongitude\": 79.8732,\n  \"destinationAddress\": \"SLIIT Metropolitan Campus, Colombo 03\",\n  \"driverId\": null\n}"
         },
         "url": {
           "raw": "{{ride_url}}/api/v1/rides",
@@ -86,7 +86,7 @@
             "rides"
           ]
         },
-        "description": "Creates a new ride request for passenger 101. Initial status is REQUESTED."
+        "description": "Creates a new ride request for the sample passenger string ID. Initial status is REQUESTED."
       },
       "response": []
     },
@@ -177,9 +177,9 @@
               "    pm.response.to.have.status(200);",
               "});",
               "var jsonData = pm.response.json();",
-              "pm.test(\"Status transitioned to ASSIGNED and driver is 201\", function () {",
+              "pm.test(\"Status transitioned to ASSIGNED and driver matches the sample string ID\", function () {",
               "    pm.expect(jsonData.status).to.eql(\"ASSIGNED\");",
-              "    pm.expect(jsonData.driverId).to.eql(201);",
+              "    pm.expect(jsonData.driverId).to.eql('6abbfa6d095b5451ceb2f20a');",
               "});"
             ],
             "type": "text/javascript"
@@ -190,7 +190,7 @@
         "method": "PATCH",
         "header": [],
         "url": {
-          "raw": "{{ride_url}}/api/v1/rides/{{ride_id}}/assign-driver/201",
+          "raw": "{{ride_url}}/api/v1/rides/{{ride_id}}/assign-driver/6abbfa6d095b5451ceb2f20a",
           "host": [
             "{{ride_url}}"
           ],
@@ -200,10 +200,10 @@
             "rides",
             "{{ride_id}}",
             "assign-driver",
-            "201"
+            "6abbfa6d095b5451ceb2f20a"
           ]
         },
-        "description": "Assigns driver 201 to the ride. Status automatically transitions from REQUESTED to ASSIGNED."
+        "description": "Assigns the sample driver string ID to the ride. Status automatically transitions from REQUESTED to ASSIGNED."
       },
       "response": []
     },
@@ -364,10 +364,10 @@
               "    pm.response.to.have.status(200);",
               "});",
               "var jsonData = pm.response.json();",
-              "pm.test(\"History contains rides for passenger 101\", function () {",
+              "pm.test(\"History contains rides for the sample passenger string ID\", function () {",
               "    pm.expect(jsonData).to.be.an(\"array\");",
               "    pm.expect(jsonData.length).to.be.at.least(1);",
-              "    pm.expect(jsonData[0].passengerId).to.eql(101);",
+              "    pm.expect(jsonData[0].passengerId).to.eql('6abbfa6d095b5451ceb2f209');",
               "});"
             ],
             "type": "text/javascript"
@@ -378,7 +378,7 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{ride_url}}/api/v1/rides/passenger/101",
+          "raw": "{{ride_url}}/api/v1/rides/passenger/6abbfa6d095b5451ceb2f209",
           "host": [
             "{{ride_url}}"
           ],
@@ -387,10 +387,10 @@
             "v1",
             "rides",
             "passenger",
-            "101"
+            "6abbfa6d095b5451ceb2f209"
           ]
         },
-        "description": "Fetches all rides for passenger 101, ordered newest first."
+        "description": "Fetches all rides for the sample passenger string ID, ordered newest first."
       },
       "response": []
     },
@@ -405,10 +405,10 @@
               "    pm.response.to.have.status(200);",
               "});",
               "var jsonData = pm.response.json();",
-              "pm.test(\"Returns rides assigned to driver 201\", function () {",
+              "pm.test(\"Returns rides assigned to the sample driver string ID\", function () {",
               "    pm.expect(jsonData).to.be.an(\"array\");",
               "    pm.expect(jsonData.length).to.be.at.least(1);",
-              "    pm.expect(jsonData[0].driverId).to.eql(201);",
+              "    pm.expect(jsonData[0].driverId).to.eql('6abbfa6d095b5451ceb2f20a');",
               "});"
             ],
             "type": "text/javascript"
@@ -419,7 +419,7 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{ride_url}}/api/v1/rides/driver/201",
+          "raw": "{{ride_url}}/api/v1/rides/driver/6abbfa6d095b5451ceb2f20a",
           "host": [
             "{{ride_url}}"
           ],
@@ -428,10 +428,10 @@
             "v1",
             "rides",
             "driver",
-            "201"
+            "6abbfa6d095b5451ceb2f20a"
           ]
         },
-        "description": "Fetches all rides assigned to driver 201."
+        "description": "Fetches all rides assigned to the sample driver string ID."
       },
       "response": []
     },
@@ -462,7 +462,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"passengerId\": 102,\n  \"pickupLatitude\": 6.9000,\n  \"pickupLongitude\": 79.8500,\n  \"pickupAddress\": \"Bambalapitiya, Colombo 04\",\n  \"destinationLatitude\": 6.9300,\n  \"destinationLongitude\": 79.8400,\n  \"destinationAddress\": \"Galle Face Green, Colombo 03\"\n}"
+          "raw": "{\n  \"passengerId\": \"6abbfa6d095b5451ceb2f208\",\n  \"pickupLatitude\": 6.9000,\n  \"pickupLongitude\": 79.8500,\n  \"pickupAddress\": \"Bambalapitiya, Colombo 04\",\n  \"destinationLatitude\": 6.9300,\n  \"destinationLongitude\": 79.8400,\n  \"destinationAddress\": \"Galle Face Green, Colombo 03\"\n}"
         },
         "url": {
           "raw": "{{ride_url}}/api/v1/rides",

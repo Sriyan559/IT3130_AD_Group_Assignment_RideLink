@@ -108,7 +108,7 @@ public class RideController {
             @Parameter(description = "UUID of the ride", required = true)
             @PathVariable UUID rideId,
             @Parameter(description = "ID of the driver to assign", required = true)
-            @PathVariable Long driverId) {
+            @PathVariable String driverId) {
         return service.assignDriver(rideId, driverId);
     }
 
@@ -118,7 +118,7 @@ public class RideController {
             content = @Content(array = @ArraySchema(schema = @Schema(implementation = RideResponse.class))))
     public List<RideResponse> history(
             @Parameter(description = "ID of the passenger", required = true)
-            @PathVariable Long passengerId) {
+            @PathVariable String passengerId) {
         return service.history(passengerId);
     }
 
@@ -128,7 +128,7 @@ public class RideController {
             content = @Content(array = @ArraySchema(schema = @Schema(implementation = RideResponse.class))))
     public List<RideResponse> driverRides(
             @Parameter(description = "ID of the driver", required = true)
-            @PathVariable Long driverId) {
+            @PathVariable String driverId) {
         return service.driverRides(driverId);
     }
 

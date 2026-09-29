@@ -5,13 +5,14 @@ import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import java.math.BigDecimal;
 
 @Schema(description = "Request payload for creating a new ride request")
 public record CreateRideRequest(
-        @Schema(description = "ID of the passenger requesting the ride", example = "101")
-        @NotNull(message = "passengerId is required")
-        Long passengerId,
+        @Schema(description = "ID of the passenger requesting the ride", example = "6abbfa6d095b5451ceb2f209")
+        @NotBlank(message = "passengerId is required")
+        String passengerId,
 
         @Schema(description = "Pickup location latitude (-90.0 to 90.0)", example = "6.9271")
         @NotNull(message = "pickupLatitude is required")
@@ -45,6 +46,7 @@ public record CreateRideRequest(
         @NotBlank(message = "destinationAddress is required")
         String destinationAddress,
 
-        @Schema(description = "Optional assigned driver ID at ride booking time", example = "201", nullable = true)
-        Long driverId
+        @Schema(description = "Optional assigned driver ID at ride booking time", example = "6abbfa6d095b5451ceb2f20a", nullable = true)
+        @Pattern(regexp = "\\S+", message = "driverId must be nonblank and contain no whitespace")
+        String driverId
 ) { }

@@ -95,8 +95,8 @@ Base URL: `http://localhost:8083/api/v1/rides`
 ```json
 {
   "_id": "550e8400-e29b-41d4-a716-446655440000",
-  "passengerId": 101,
-  "driverId": 201,
+  "passengerId": "6abbfa6d095b5451ceb2f209",
+  "driverId": "6abbfa6d095b5451ceb2f20a",
   "pickupLatitude": 6.9271,
   "pickupLongitude": 79.8612,
   "pickupAddress": "Colombo Fort Railway Station, Colombo",
@@ -207,3 +207,31 @@ A dedicated, ready-to-run Postman collection and environment are provided in the
    - `15 [Negative] Create Ride Validation Failure (400 Bad Request)`
 
 All test cases include automated `pm.test(...)` assertions validating response codes, status transitions, and data integrity!
+
+## External ID compatibility
+
+Passenger/account IDs and driver IDs are opaque strings, matching Account and Driver
+Service responses. Preserve them exactly; do not parse them as numbers. Ride IDs and
+fare IDs remain UUIDs, and durationMinutes remains numeric. A missing/null driverId
+still creates an unassigned REQUESTED ride; blank driverId is rejected.
+
+Older rides with numeric external IDs require a deliberate data migration/mapping
+before using string-based history queries. Do not assume numeric test IDs identify
+real accounts. Use a fresh isolated test database for integration, or back up and
+migrate verified mappings with the service owner. No existing database is modified
+by this source change. This fixes ID compatibility only: account verification,
+Driver HTTP calls and atomic reservation remain separate integration work.
+
+### 2026-09-29 - External identifier compatibility fix
+
+- Changed passengerId and driverId to String throughout the API DTOs, document,
+  controller, service and repository. Updated OpenAPI and Postman samples; added
+  required nonblank passenger and optional nonblank driver validation.
+- Verification: `mvn -B -pl ride-management-service -am verify` with
+  `RIDELINK_MONGO_TESTS=true` passed 15 tests, zero failures/errors/skips. Eight new
+  HTTP tests cover create/read/assignment/history and validation; one new local
+  MongoDB test verifies string storage and repository queries. Its isolated database
+  was dropped. No shared/cloud database was used or migrated.
+- Remaining: merge this isolated fix into the Ride owner's branch, align existing
+  numeric data deliberately, and implement account/driver clients and reservation.
+- Git at writing: prepared locally on fix/ride-external-string-ids, based on 9b34d37.

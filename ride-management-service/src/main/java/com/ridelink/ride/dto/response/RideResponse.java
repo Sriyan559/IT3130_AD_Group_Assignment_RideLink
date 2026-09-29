@@ -11,11 +11,11 @@ public record RideResponse(
         @Schema(description = "Unique UUID of the ride", example = "550e8400-e29b-41d4-a716-446655440000")
         UUID id,
 
-        @Schema(description = "ID of the passenger", example = "101")
-        Long passengerId,
+        @Schema(description = "ID of the passenger", example = "6abbfa6d095b5451ceb2f209")
+        String passengerId,
 
-        @Schema(description = "ID of the assigned driver", example = "201", nullable = true)
-        Long driverId,
+        @Schema(description = "ID of the assigned driver", example = "6abbfa6d095b5451ceb2f20a", nullable = true)
+        String driverId,
 
         @Schema(description = "Pickup latitude", example = "6.9271")
         BigDecimal pickupLatitude,

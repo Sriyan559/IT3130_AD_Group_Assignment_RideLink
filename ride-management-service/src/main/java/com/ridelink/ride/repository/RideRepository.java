@@ -14,7 +14,7 @@ import org.springframework.stereotype.Repository;
 public interface RideRepository extends MongoRepository<Ride, UUID> {
     List<Ride> findAllByOrderByCreatedAtDesc();
     List<Ride> findByStatusOrderByCreatedAtDesc(RideStatus status);
-    List<Ride> findByPassengerIdOrderByCreatedAtDesc(Long passengerId);
-    List<Ride> findByDriverIdOrderByCreatedAtDesc(Long driverId);
-    List<Ride> findByDriverIdAndStatus(Long driverId, RideStatus status);
+    List<Ride> findByPassengerIdOrderByCreatedAtDesc(String passengerId);
+    List<Ride> findByDriverIdOrderByCreatedAtDesc(String driverId);
+    List<Ride> findByDriverIdAndStatus(String driverId, RideStatus status);
 }
