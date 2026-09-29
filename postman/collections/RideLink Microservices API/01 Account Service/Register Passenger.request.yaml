@@ -1,0 +1,18 @@
+$kind: http-request
+url: "{{account_service_url}}/api/auth/register/passenger"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "fullName": "Demo Passenger",
+      "email": "passenger@example.com",
+      "password": "Password123!",
+      "phone": "+94771234567"
+    }
+scripts:
+  - type: afterResponse
+    code: if (pm.response.code === 201) pm.environment.set('passenger_id', pm.response.json().id);
+order: 1000
