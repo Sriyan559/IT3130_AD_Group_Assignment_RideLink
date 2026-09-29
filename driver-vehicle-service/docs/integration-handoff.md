@@ -1,3 +1,7 @@
+> Updated 2026-09-30: the gaps below describe the earlier branch review.
+> String IDs, ownership, Account verification and reservations are now implemented on
+> `integration`. See [the runnable integration guide](../../integration-tests/README.md).
+
 # Driver Service integration handoff
 
 Reviewed on 2026-09-29 after fetching origin. This is an implementation review and

@@ -6,7 +6,8 @@ spring:
     name: ride-management-service
   data:
     mongodb:
-      uri: ${RIDE_DB_URI:mongodb+srv://ridelink_ride:ride123@cluster0.8j37ck1.mongodb.net/ride_db?retryWrites=true&w=majority&appName=Cluster0}
+      uuid-representation: standard
+      uri: ${MONGODB_URI:mongodb://localhost:27017/ride_db}
 
 # Springdoc OpenAPI Configuration
 springdoc:
@@ -24,3 +25,11 @@ services:
     url: ${DRIVER_SERVICE_URL:http://localhost:8082}
   payment:
     url: ${PAYMENT_SERVICE_URL:http://localhost:8084}
+
+# Account JWT verification and authenticated internal Driver calls.
+ridelink:
+  security:
+    enabled: ${RIDELINK_SECURITY_ENABLED:true}
+  account-url: ${ACCOUNT_SERVICE_URL:http://localhost:8081}
+  driver-url: ${DRIVER_SERVICE_URL:http://localhost:8082}
+  service-token: ${RIDELINK_SERVICE_TOKEN:}

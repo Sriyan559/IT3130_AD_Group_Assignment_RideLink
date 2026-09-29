@@ -17,6 +17,12 @@ public class AccountController {
     private final AccountService service;
     public AccountController(AccountService service) { this.service = service; }
 
+    @GetMapping("/me")
+    @Operation(summary = "Get the currently authenticated ACTIVE account")
+    public AccountResponse me(org.springframework.security.core.Authentication authentication) {
+        return service.get(authentication.getName());
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("@accountAuthorization.canAccess(#id, authentication)")
     @Operation(summary = "Get account profile", description = "Accessible by the account owner or ADMIN.")

@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/drivers")
 public class DriverController {
+    @org.springframework.beans.factory.annotation.Value("${ridelink.security.enabled:true}")
+    private boolean securityEnabled;
     private final DriverService driverService;
     private final DriverAvailabilityService availabilityService;
 
@@ -30,7 +32,7 @@ public class DriverController {
     }
 
     @Operation(summary = "Set driver availability to AVAILABLE or OFFLINE",
-            description = "Repeated updates are idempotent. ON_TRIP drivers cannot toggle availability. Authorization is pending integration.")
+            description = "Repeated updates are idempotent. ON_TRIP drivers cannot toggle availability. Requires the owning DRIVER account token.")
     @ApiResponse(responseCode = "200", description = "Updated driver profile")
     @ApiResponse(responseCode = "400", description = "Invalid request")
     @ApiResponse(responseCode = "404", description = "Driver not found")
@@ -43,7 +45,7 @@ public class DriverController {
     }
 
     @Operation(summary = "Create a driver operational profile",
-            description = "Creates an OFFLINE driver. Account verification and authorization are pending integration.")
+            description = "Creates an OFFLINE driver. Requires a verified ACTIVE DRIVER account matching accountId.")
     @ApiResponse(responseCode = "201", description = "Driver created")
     @ApiResponse(responseCode = "400", description = "Invalid request")
     @ApiResponse(responseCode = "409", description = "Account or licence already registered")
@@ -51,11 +53,12 @@ public class DriverController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public DriverResponse create(@Valid @RequestBody CreateDriverRequest request) {
+        if (securityEnabled) com.ridelink.support.Identity.current().requireOwner(request.accountId(), "DRIVER");
         return driverService.create(request);
     }
 
     @Operation(summary = "Get a driver operational profile by driver ID",
-            description = "Uses the ID returned by profile creation. Authorization is pending integration.")
+            description = "Uses the ID returned by profile creation. Requires the owning DRIVER account token.")
     @ApiResponse(responseCode = "200", description = "Driver found")
     @ApiResponse(responseCode = "404", description = "Driver not found")
     @ApiResponse(responseCode = "503", description = "Database unavailable")

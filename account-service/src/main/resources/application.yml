@@ -6,7 +6,7 @@ spring:
     name: account-service
   data:
     mongodb:
-      uri: ${MONGODB_URI}
+      uri: ${MONGODB_URI:mongodb://localhost:27017/account_db}
       database: ${MONGODB_DATABASE:ridelink_account_db}
       auto-index-creation: true
 

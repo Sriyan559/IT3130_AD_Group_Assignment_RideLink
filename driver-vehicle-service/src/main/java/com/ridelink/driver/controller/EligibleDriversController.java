@@ -25,7 +25,7 @@ public class EligibleDriversController {
     @Operation(summary = "Find nearby AVAILABLE drivers with registered vehicles",
             description = "Required lat/lng in degrees and radius in kilometres (greater than 0, maximum 50). "
                     + "Returns nearest first, or an empty list. Location freshness defaults to 300 seconds. "
-                    + "Read-only discovery; does not reserve drivers. Authorization is pending integration.")
+                    + "Read-only discovery; does not reserve drivers. Requires the owning DRIVER account token.")
     @ApiResponse(responseCode = "200", description = "Eligible drivers, possibly empty")
     @ApiResponse(responseCode = "400", description = "Invalid or missing query parameters")
     @ApiResponse(responseCode = "503", description = "Database unavailable")

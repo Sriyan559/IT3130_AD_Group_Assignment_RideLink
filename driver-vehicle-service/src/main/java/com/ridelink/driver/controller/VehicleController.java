@@ -24,7 +24,7 @@ public class VehicleController {
     }
 
     @Operation(summary = "Register a vehicle for an existing driver",
-            description = "Does not change driver availability. Authorization is pending integration.")
+            description = "Does not change driver availability. Requires the owning DRIVER account token.")
     @ApiResponse(responseCode = "201", description = "Vehicle registered")
     @ApiResponse(responseCode = "400", description = "Invalid request")
     @ApiResponse(responseCode = "404", description = "Driver not found")

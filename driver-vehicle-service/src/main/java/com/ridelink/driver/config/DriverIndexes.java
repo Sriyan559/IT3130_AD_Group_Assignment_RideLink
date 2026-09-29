@@ -20,6 +20,10 @@ public class DriverIndexes implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         var indexes = mongoTemplate.indexOps(Driver.class);
+        indexes.ensureIndex(new Index().on("activeRideId", Sort.Direction.ASC).unique()
+                .partial(org.springframework.data.mongodb.core.index.PartialIndexFilter.of(
+                        org.springframework.data.mongodb.core.query.Criteria.where("activeRideId").type(2)))
+                .named("driver_active_ride_unique"));
         indexes.ensureIndex(new Index().on("availabilityStatus", Sort.Direction.ASC)
                 .on("location.updatedAt", Sort.Direction.DESC).named("driver_search_status_time"));
         indexes.ensureIndex(new Index().on("accountId", Sort.Direction.ASC)

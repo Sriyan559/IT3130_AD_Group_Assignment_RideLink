@@ -42,6 +42,13 @@ class AccountApiTest {
     @MockBean JwtService jwtService;
     @MockBean AccountRepository accountRepository;
 
+    @Test @WithMockUser(username="p1", roles="PASSENGER")
+    void meUsesAuthenticatedIdentity() throws Exception {
+        when(accountService.get("p1")).thenReturn(response("p1", Role.PASSENGER));
+        mvc.perform(get("/api/accounts/me")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value("p1"));
+    }
+
     @Test void publicRegistrationEndpoint_andPasswordHashNeverExposed() throws Exception {
         when(authService.registerPassenger(any())).thenReturn(response("p1", Role.PASSENGER));
         mvc.perform(post("/api/auth/register/passenger").contentType("application/json")

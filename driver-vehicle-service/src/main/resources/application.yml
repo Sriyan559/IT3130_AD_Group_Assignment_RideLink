@@ -25,3 +25,11 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
     operationsSorter: method
+
+# Account JWT verification and authenticated internal Driver calls.
+ridelink:
+  security:
+    enabled: ${RIDELINK_SECURITY_ENABLED:true}
+  account-url: ${ACCOUNT_SERVICE_URL:http://localhost:8081}
+  driver-url: ${DRIVER_SERVICE_URL:http://localhost:8082}
+  service-token: ${RIDELINK_SERVICE_TOKEN:}

@@ -13,6 +13,14 @@ import org.springframework.data.mongodb.core.mapping.Document;
  */
 @Document("rides")
 public class Ride {
+    @org.springframework.data.annotation.Version
+    private Long version;
+    private String pendingDriverId;
+    private boolean releasePending;
+    public String getPendingDriverId() { return pendingDriverId; }
+    public void setPendingDriverId(String id) { pendingDriverId = id; }
+    public boolean isReleasePending() { return releasePending; }
+    public void setReleasePending(boolean value) { releasePending = value; }
 
     @Id
     private UUID id;

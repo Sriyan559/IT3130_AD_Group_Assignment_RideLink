@@ -35,6 +35,8 @@ class ExternalIdContractTest {
     @BeforeEach
     void setup() {
         var service = new RideService(repository, new RideLifecycle(), new RideMapper());
+        service.setDriverGateway(mock(com.ridelink.ride.integration.DriverGateway.class));
+        when(repository.findById(any())).thenAnswer(call -> Optional.ofNullable(saved));
         mvc = MockMvcBuilders.standaloneSetup(new RideController(service))
                 .setControllerAdvice(new ApiExceptionHandler()).build();
         when(repository.save(any(Ride.class))).thenAnswer(call -> {

@@ -11,9 +11,16 @@ public record Driver(
         String licenseNumber,
         String serviceArea,
         AvailabilityStatus availabilityStatus,
-        DriverLocation location) {
+        DriverLocation location,
+        String activeRideId,
+        java.util.List<String> releasedRideIds) {
     @org.springframework.data.annotation.PersistenceCreator
     public Driver {
+    }
+
+    public Driver(String id, String accountId, String licenseNumber, String serviceArea,
+                  AvailabilityStatus availabilityStatus, DriverLocation location) {
+        this(id, accountId, licenseNumber, serviceArea, availabilityStatus, location, null, java.util.List.of());
     }
 
     public Driver(String id, String accountId, String licenseNumber, String serviceArea,

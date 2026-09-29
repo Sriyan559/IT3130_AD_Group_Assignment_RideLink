@@ -20,6 +20,7 @@
     <description>IT3130 - Application Development: Backend Microservices for a Ride-Sharing Platform</description>
 
     <modules>
+        <module>service-support</module>
         <module>account-service</module>
         <module>driver-vehicle-service</module>
         <module>ride-management-service</module>

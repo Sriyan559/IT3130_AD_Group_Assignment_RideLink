@@ -11,6 +11,6 @@ public class RideMapper {
                 ride.getPickupLatitude(), ride.getPickupLongitude(), ride.getPickupAddress(),
                 ride.getDestinationLatitude(), ride.getDestinationLongitude(), ride.getDestinationAddress(),
                 ride.getStatus(), ride.getDistanceKm(), ride.getDurationMinutes(), ride.getFareId(),
-                ride.getCreatedAt(), ride.getUpdatedAt());
+                ride.getCreatedAt(), ride.getUpdatedAt(), ride.getPendingDriverId(), ride.isReleasePending());
     }
 }

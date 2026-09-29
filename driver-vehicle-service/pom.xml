@@ -17,6 +17,7 @@
     <description>RideLink Driver &amp; Vehicle Service - Manages driver operational profiles, vehicles, availability, and location simulation</description>
 
     <dependencies>
+        <dependency><groupId>com.ridelink</groupId><artifactId>service-support</artifactId><version>${project.version}</version></dependency>
         <!-- Spring Boot Starter Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

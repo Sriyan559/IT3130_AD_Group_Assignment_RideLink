@@ -18,7 +18,7 @@ public class DriverLocationController {
     }
 
     @Operation(summary = "Update simulated driver coordinates",
-            description = "Accepts coordinates in any availability state. Sets a server timestamp and preserves profile and status. Authorization is pending integration.")
+            description = "Accepts coordinates in any availability state. Sets a server timestamp and preserves profile and status. Requires the owning DRIVER account token.")
     @ApiResponse(responseCode = "200", description = "Updated driver profile with location")
     @ApiResponse(responseCode = "400", description = "Invalid coordinates or request")
     @ApiResponse(responseCode = "404", description = "Driver not found")

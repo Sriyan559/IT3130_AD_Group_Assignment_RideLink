@@ -37,6 +37,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/rides")
 @Tag(name = "Ride Management API", description = "Endpoints for booking rides, tracking lifecycle status, assigning drivers, and viewing history")
 public class RideController {
+    @org.springframework.beans.factory.annotation.Value("${ridelink.security.enabled:true}")
+    private boolean securityEnabled;
 
     private final RideService service;
 
@@ -53,6 +55,7 @@ public class RideController {
                     content = @Content(schema = @Schema(example = "{\"timestamp\":\"2026-09-29T10:00:00Z\",\"status\":400,\"error\":\"pickupAddress: pickupAddress is required\"}")))
     })
     public ResponseEntity<RideResponse> create(@Valid @RequestBody CreateRideRequest request) {
+        if (securityEnabled) com.ridelink.support.Identity.current().requireOwner(request.passengerId(), "PASSENGER");
         RideResponse response = service.create(request);
         return ResponseEntity.created(URI.create("/api/v1/rides/" + response.id())).body(response);
     }

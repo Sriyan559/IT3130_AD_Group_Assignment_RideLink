@@ -17,6 +17,7 @@
     <description>RideLink Ride Management Service - Manages ride requests, status lifecycle transitions, driver assignment, and coordination</description>
 
     <dependencies>
+        <dependency><groupId>com.ridelink</groupId><artifactId>service-support</artifactId><version>${project.version}</version></dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
