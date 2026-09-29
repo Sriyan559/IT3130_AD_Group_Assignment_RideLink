@@ -31,8 +31,7 @@ The RideLink platform is decomposed into **exactly four core microservices**, wi
 - **Backend Framework:** Spring Boot 3.3.4
 - **Build System:** Apache Maven (Multi-module parent + independent service POMs)
 - **Persistence Technologies:**
-  - **Relational (PostgreSQL):** Account Service (`account_db`), Ride Management Service (`ride_db`), Fare & Payment Service (`payment_db`)
-  - **Document (MongoDB):** Driver & Vehicle Service (`driver_db`)
+  - **Document (MongoDB):** Account Service (`account_db`), Driver & Vehicle Service (`driver_db`), Ride Management Service (`ride_db`), Fare & Payment Service (`payment_db`)
 - **API Documentation:** Springdoc OpenAPI 2.5.0 / Swagger UI
 - **Demonstration & Testing:** Swagger UI & Postman Collection v2.1.0
 - **Continuous Integration:** GitHub Actions (`.github/workflows/ci.yml`)
@@ -54,16 +53,16 @@ The RideLink platform is decomposed into **exactly four core microservices**, wi
          |                         |                         |
          v                         +-----------+             v
    [account_db]                    |           |        [driver_db]
-   (PostgreSQL)                    v           v        (MongoDB)
+  (MongoDB)                       v           v        (MongoDB)
                              +-----------+ +-----------+
                              | ride_db   | | Fare &    |
-                             | (Postgres)| | Payment   |
+                             | (MongoDB) | | Payment   |
                              +-----------+ | (Port 8084|
                                            +-----+-----+
                                                  |
                                                  v
                                            [payment_db]
-                                           (PostgreSQL)
+                                           (MongoDB)
 ```
 
 ---
@@ -72,10 +71,10 @@ The RideLink platform is decomposed into **exactly four core microservices**, wi
 
 ```
 RideLink/
-├── account-service/                  # Microservice 1: Port 8081 (PostgreSQL: account_db)
+├── account-service/                  # Microservice 1: Port 8081 (MongoDB: account_db)
 ├── driver-vehicle-service/           # Microservice 2: Port 8082 (MongoDB: driver_db)
-├── ride-management-service/          # Microservice 3: Port 8083 (PostgreSQL: ride_db)
-├── fare-payment-service/             # Microservice 4: Port 8084 (PostgreSQL: payment_db)
+├── ride-management-service/          # Microservice 3: Port 8083 (MongoDB: ride_db)
+├── fare-payment-service/             # Microservice 4: Port 8084 (MongoDB: payment_db)
 ├── integration-tests/                # End-to-end integration workflows & contracts
 │   ├── workflows/                    # Workflows 1-7 (including negative test cases)
 │   ├── contracts/                    # Interservice API JSON schema contracts
@@ -112,7 +111,7 @@ In strict compliance with assignment guidelines, **each microservice owns its pr
 
 **Strict Rules:**
 1. Direct cross-service database querying is **strictly prohibited**.
-2. No sharing of JPA entities or MongoDB document classes between services.
+2. No sharing of persistence models or repositories between services.
 3. Interservice data sharing is conducted strictly through REST APIs and scalar identifiers (`passengerId`, `driverId`, `rideId`).
 
 ---
@@ -132,10 +131,10 @@ Never commit real credentials to version control. Configuration is parameterized
 
 | Service | Port Variable | Default Port | Database Variable | Default Database |
 | :--- | :--- | :-: | :--- | :--- |
-| Account Service | `ACCOUNT_SERVICE_PORT` | `8081` | `ACCOUNT_DB_NAME` | `account_db` |
-| Driver & Vehicle Service | `DRIVER_SERVICE_PORT` | `8082` | `DRIVER_DB_NAME` | `driver_db` |
-| Ride Management Service | `RIDE_SERVICE_PORT` | `8083` | `RIDE_DB_NAME` | `ride_db` |
-| Fare & Payment Service | `PAYMENT_SERVICE_PORT` | `8084` | `PAYMENT_DB_NAME` | `payment_db` |
+| Account Service | `ACCOUNT_SERVICE_PORT` | `8081` | `ACCOUNT_DB_URI` | `mongodb://localhost:27017/account_db` |
+| Driver & Vehicle Service | `DRIVER_SERVICE_PORT` | `8082` | `DRIVER_DB_URI` | `mongodb://localhost:27017/driver_db` |
+| Ride Management Service | `RIDE_SERVICE_PORT` | `8083` | `RIDE_DB_URI` | `mongodb://localhost:27017/ride_db` |
+| Fare & Payment Service | `PAYMENT_SERVICE_PORT` | `8084` | `PAYMENT_DB_URI` | `mongodb://localhost:27017/payment_db` |
 
 Copy `.env.example` to `.env` or use `application-local.yml` for local testing overrides.
 
@@ -146,7 +145,7 @@ Copy `.env.example` to `.env` or use `application-local.yml` for local testing o
 ### Prerequisites
 - Java 17+ Development Kit (JDK 17)
 - Apache Maven 3.8+
-- Docker / Local PostgreSQL (Port 5432) & Local MongoDB (Port 27017)
+- Local MongoDB or a MongoDB-compatible hosted instance
 
 ### Compile the entire system:
 ```bash

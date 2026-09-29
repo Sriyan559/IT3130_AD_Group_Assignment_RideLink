@@ -1,0 +1,653 @@
+{
+  "info": {
+    "_postman_id": "4b68e925-1e3d-4c8e-a9b1-7a6c9a3521e1",
+    "name": "Ride Management Service API",
+    "description": "Comprehensive Postman test suite for IT3130 Application Development Project - Ride Management Service (Port 8083, MongoDB ride_db). Maintained by Herath H M S R (IT24103280).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 Health Check & Info",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Service status is UP\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql(\"UP\");",
+              "    pm.expect(jsonData.database).to.include(\"MongoDB\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{ride_url}}/",
+          "host": [
+            "{{ride_url}}"
+          ],
+          "path": [
+            ""
+          ]
+        },
+        "description": "Checks whether Ride Management Service is running and returns basic metadata."
+      },
+      "response": []
+    },
+    {
+      "name": "02 Create Ride Request (Initial: REQUESTED)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201 Created\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "var jsonData = pm.response.json();",
+              "pm.test(\"Ride status is REQUESTED\", function () {",
+              "    pm.expect(jsonData.status).to.eql(\"REQUESTED\");",
+              "    pm.expect(jsonData.id).to.not.be.empty;",
+              "});",
+              "pm.environment.set(\"ride_id\", jsonData.id);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"passengerId\": \"6abbfa6d095b5451ceb2f209\",\n  \"pickupLatitude\": 6.9271,\n  \"pickupLongitude\": 79.8612,\n  \"pickupAddress\": \"Colombo Fort Railway Station, Colombo\",\n  \"destinationLatitude\": 6.9147,\n  \"destinationLongitude\": 79.8732,\n  \"destinationAddress\": \"SLIIT Metropolitan Campus, Colombo 03\",\n  \"driverId\": null\n}"
+        },
+        "url": {
+          "raw": "{{ride_url}}/api/v1/rides",
+          "host": [
+            "{{ride_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "rides"
+          ]
+        },
+        "description": "Creates a new ride request for the sample passenger string ID. Initial status is REQUESTED."
+      },
+      "response": []
+    },
+    {
+      "name": "03 Get All Rides",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200 OK\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Response is an array\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an(\"array\");",
+              "    pm.expect(jsonData.length).to.be.at.least(1);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{ride_url}}/api/v1/rides",
+          "host": [
+            "{{ride_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "rides"
+          ]
+        },
+        "description": "Retrieves all rides stored in MongoDB ride_db collection."
+      },
+      "response": []
+    },
+    {
+      "name": "04 Get Ride by ID",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200 OK\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var jsonData = pm.response.json();",
+              "pm.test(\"ID matches environment ride_id\", function () {",
+              "    pm.expect(jsonData.id).to.eql(pm.environment.get(\"ride_id\"));",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{ride_url}}/api/v1/rides/{{ride_id}}",
+          "host": [
+            "{{ride_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "rides",
+            "{{ride_id}}"
+          ]
+        },
+        "description": "Retrieves details of the ride created in step 02."
+      },
+      "response": []
+    },
+    {
+      "name": "05 Assign Driver to Ride (REQUESTED -> ASSIGNED)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200 OK\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var jsonData = pm.response.json();",
+              "pm.test(\"Status transitioned to ASSIGNED and driver matches the sample string ID\", function () {",
+              "    pm.expect(jsonData.status).to.eql(\"ASSIGNED\");",
+              "    pm.expect(jsonData.driverId).to.eql('6abbfa6d095b5451ceb2f20a');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "url": {
+          "raw": "{{ride_url}}/api/v1/rides/{{ride_id}}/assign-driver/6abbfa6d095b5451ceb2f20a",
+          "host": [
+            "{{ride_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "rides",
+            "{{ride_id}}",
+            "assign-driver",
+            "6abbfa6d095b5451ceb2f20a"
+          ]
+        },
+        "description": "Assigns the sample driver string ID to the ride. Status automatically transitions from REQUESTED to ASSIGNED."
+      },
+      "response": []
+    },
+    {
+      "name": "06 Update Status to ACCEPTED (ASSIGNED -> ACCEPTED)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200 OK\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var jsonData = pm.response.json();",
+              "pm.test(\"Status is ACCEPTED\", function () {",
+              "    pm.expect(jsonData.status).to.eql(\"ACCEPTED\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"ACCEPTED\"\n}"
+        },
+        "url": {
+          "raw": "{{ride_url}}/api/v1/rides/{{ride_id}}/status",
+          "host": [
+            "{{ride_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "rides",
+            "{{ride_id}}",
+            "status"
+          ]
+        },
+        "description": "Driver accepts the assigned ride."
+      },
+      "response": []
+    },
+    {
+      "name": "07 Update Status to IN_PROGRESS (ACCEPTED -> IN_PROGRESS)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200 OK\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var jsonData = pm.response.json();",
+              "pm.test(\"Status is IN_PROGRESS\", function () {",
+              "    pm.expect(jsonData.status).to.eql(\"IN_PROGRESS\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"IN_PROGRESS\"\n}"
+        },
+        "url": {
+          "raw": "{{ride_url}}/api/v1/rides/{{ride_id}}/status",
+          "host": [
+            "{{ride_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "rides",
+            "{{ride_id}}",
+            "status"
+          ]
+        },
+        "description": "Passenger has boarded and trip has started."
+      },
+      "response": []
+    },
+    {
+      "name": "08 Complete Trip (IN_PROGRESS -> COMPLETED)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200 OK\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var jsonData = pm.response.json();",
+              "pm.test(\"Status is COMPLETED with trip metrics\", function () {",
+              "    pm.expect(jsonData.status).to.eql(\"COMPLETED\");",
+              "    pm.expect(jsonData.distanceKm).to.eql(8.5);",
+              "    pm.expect(jsonData.durationMinutes).to.eql(22);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"COMPLETED\",\n  \"distanceKm\": 8.5,\n  \"durationMinutes\": 22\n}"
+        },
+        "url": {
+          "raw": "{{ride_url}}/api/v1/rides/{{ride_id}}/status",
+          "host": [
+            "{{ride_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "rides",
+            "{{ride_id}}",
+            "status"
+          ]
+        },
+        "description": "Trip completes at destination with recorded distance and duration."
+      },
+      "response": []
+    },
+    {
+      "name": "09 Get Passenger Ride History",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200 OK\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var jsonData = pm.response.json();",
+              "pm.test(\"History contains rides for the sample passenger string ID\", function () {",
+              "    pm.expect(jsonData).to.be.an(\"array\");",
+              "    pm.expect(jsonData.length).to.be.at.least(1);",
+              "    pm.expect(jsonData[0].passengerId).to.eql('6abbfa6d095b5451ceb2f209');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{ride_url}}/api/v1/rides/passenger/6abbfa6d095b5451ceb2f209",
+          "host": [
+            "{{ride_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "rides",
+            "passenger",
+            "6abbfa6d095b5451ceb2f209"
+          ]
+        },
+        "description": "Fetches all rides for the sample passenger string ID, ordered newest first."
+      },
+      "response": []
+    },
+    {
+      "name": "10 Get Driver Assigned Rides",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200 OK\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var jsonData = pm.response.json();",
+              "pm.test(\"Returns rides assigned to the sample driver string ID\", function () {",
+              "    pm.expect(jsonData).to.be.an(\"array\");",
+              "    pm.expect(jsonData.length).to.be.at.least(1);",
+              "    pm.expect(jsonData[0].driverId).to.eql('6abbfa6d095b5451ceb2f20a');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{ride_url}}/api/v1/rides/driver/6abbfa6d095b5451ceb2f20a",
+          "host": [
+            "{{ride_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "rides",
+            "driver",
+            "6abbfa6d095b5451ceb2f20a"
+          ]
+        },
+        "description": "Fetches all rides assigned to the sample driver string ID."
+      },
+      "response": []
+    },
+    {
+      "name": "11 Create Ride For Cancellation",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201 Created\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "var jsonData = pm.response.json();",
+              "pm.environment.set(\"cancel_ride_id\", jsonData.id);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"passengerId\": \"6abbfa6d095b5451ceb2f208\",\n  \"pickupLatitude\": 6.9000,\n  \"pickupLongitude\": 79.8500,\n  \"pickupAddress\": \"Bambalapitiya, Colombo 04\",\n  \"destinationLatitude\": 6.9300,\n  \"destinationLongitude\": 79.8400,\n  \"destinationAddress\": \"Galle Face Green, Colombo 03\"\n}"
+        },
+        "url": {
+          "raw": "{{ride_url}}/api/v1/rides",
+          "host": [
+            "{{ride_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "rides"
+          ]
+        },
+        "description": "Creates a temporary ride to demonstrate the cancellation flow."
+      },
+      "response": []
+    },
+    {
+      "name": "12 Cancel Ride (DELETE)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200 OK\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var jsonData = pm.response.json();",
+              "pm.test(\"Confirmation message received\", function () {",
+              "    pm.expect(jsonData.message).to.include(\"cancelled\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{ride_url}}/api/v1/rides/{{cancel_ride_id}}",
+          "host": [
+            "{{ride_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "rides",
+            "{{cancel_ride_id}}"
+          ]
+        },
+        "description": "Cancels a ride while still in REQUESTED state."
+      },
+      "response": []
+    },
+    {
+      "name": "13 [Negative] Invalid State Transition (COMPLETED -> REQUESTED)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 409 Conflict\", function () {",
+              "    pm.response.to.have.status(409);",
+              "});",
+              "var jsonData = pm.response.json();",
+              "pm.test(\"Error message indicates invalid transition\", function () {",
+              "    pm.expect(jsonData.error).to.include(\"Invalid ride status transition\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"REQUESTED\"\n}"
+        },
+        "url": {
+          "raw": "{{ride_url}}/api/v1/rides/{{ride_id}}/status",
+          "host": [
+            "{{ride_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "rides",
+            "{{ride_id}}",
+            "status"
+          ]
+        },
+        "description": "Attempts an illegal transition on an already completed ride. Expects 409 Conflict."
+      },
+      "response": []
+    },
+    {
+      "name": "14 [Negative] Get Ride Not Found",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 404 Not Found\", function () {",
+              "    pm.response.to.have.status(404);",
+              "});",
+              "var jsonData = pm.response.json();",
+              "pm.test(\"Error indicates ride not found\", function () {",
+              "    pm.expect(jsonData.error).to.include(\"Ride not found\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{ride_url}}/api/v1/rides/00000000-0000-0000-0000-000000000000",
+          "host": [
+            "{{ride_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "rides",
+            "00000000-0000-0000-0000-000000000000"
+          ]
+        },
+        "description": "Tests 404 response when querying a non-existent UUID."
+      },
+      "response": []
+    },
+    {
+      "name": "15 [Negative] Create Ride Validation Failure",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 400 Bad Request\", function () {",
+              "    pm.response.to.have.status(400);",
+              "});",
+              "var jsonData = pm.response.json();",
+              "pm.test(\"Error indicates validation error\", function () {",
+              "    pm.expect(jsonData.error).to.not.be.empty;",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"passengerId\": null,\n  \"pickupAddress\": \"\"\n}"
+        },
+        "url": {
+          "raw": "{{ride_url}}/api/v1/rides",
+          "host": [
+            "{{ride_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "rides"
+          ]
+        },
+        "description": "Tests bean validation failure when required fields are missing. Expects 400 Bad Request."
+      },
+      "response": []
+    }
+  ]
+}

@@ -5,4 +5,4 @@ This directory contains specifications, state-transition diagrams, and interserv
 - Primary Owner: Herath H M S R (Student ID: IT24103280)
 - Microservice: Ride Management Service
 - Base Package: `com.ridelink.ride`
-- Persistence: PostgreSQL (`ride_db`)
+- Persistence: MongoDB (`ride_db`)
