@@ -42,6 +42,13 @@ without relying on chat memory. This file applies throughout this repository.
 
 ## Current state (last checked 2026-09-29)
 
+- Integration follow-up (2026-09-30): the authorized cross-service implementation is
+  complete locally in C:/Users/mashi/Desktop/RideLink-integration on `integration`,
+  commit 96f968d. It adds default-on Account verification/ownership and durable
+  Driver reservation/release. The component-only state below describes this original
+  student-ID checkout. Use the integration checkout for the secured three-service demo.
+
+
 - Implemented: `POST /api/drivers`, `GET /api/drivers/{driverId}` and
   `POST /api/drivers/{driverId}/vehicles`, `PUT /api/drivers/{driverId}/availability`
   `PUT /api/drivers/{driverId}/location` and `GET /api/drivers/eligible`.
@@ -86,18 +93,13 @@ without relying on chat memory. This file applies throughout this repository.
 
 ## Next work (planned, not implemented)
 
-- Integration review found Ride uses Long external IDs while Driver and Account use
-  String IDs. Align Ride DTO/document/controller/repository types with its owner first.
-  See driver-vehicle-service/docs/integration-handoff.md for concrete contracts and gaps.
-  A tested fix is now committed locally as e71492d on fix/ride-external-string-ids
-  in sibling worktree C:/Users/mashi/Desktop/RideLink-ride-id-fix; merge/push pending.
-- Next Driver & Vehicle increment: agree on Ride Management reservation/status API
-  and identity/ownership integration. Search alone does not reserve a driver.
-- Confirm search contract and defaults with service owners; geospatial indexing and
-  pagination remain future scalability work for larger datasets.
-- Add appropriate validation, error handling, tests and usage documentation for each increment.
-- Add repeatable integration/concurrency tests for MongoDB constraints.
-- Agree on versioned routes, identity/security and eligibility rules with the other service owners.
+- Publish integration commit 96f968d and fix/ride-external-string-ids after GitHub
+  sign-in; automated push failed. The fix is already merged into local integration.
+- Run the authenticated collection from the integration checkout. Its guide is
+  integration-tests/README.md there; demo ports are 18081-18083. The old Driver-only
+  collection remains usable with the old local 8082 demo, not the secured services.
+- Fare/payment implementation, legacy-data migration and production deployment remain.
+  Do not describe the entire four-service platform as finished.
 
 ## Dated work log
 
@@ -469,6 +471,28 @@ Shared repository setup is not a claim of individual contribution by the current
   workspace documentation/log updates remain uncommitted.
 - Remaining: review/merge fix, deliberate handling of legacy numeric Ride references,
   account/driver clients and reservation integration. Full integration is not complete.
+
+### 2026-09-30 - Complete remaining three-service integration
+
+- User authorized remaining integration work. Preserved this student-ID checkout;
+  combined component branches and String-ID fix in sibling RideLink-integration.
+  Implementation is committed there as 96f968d on integration. Prior handoff docs
+  were committed here as 3d01634.
+- Added ACTIVE-account JWT verification/ownership, authenticated atomic driver
+  reservation/release, unique active-ride constraint, optimistic Ride locking and
+  persisted assignment/release recovery. Added runnable local scripts, integrated
+  Postman collection, tests and guide. See integration checkout for source/details.
+- Verification: Maven passed 191 tests with live Mongo enabled, zero failures/errors/
+  skips. Three-service E2E passed 60 HTTP status checks plus concurrency and recovery
+  assertions, including process restarts. Newman passed 19 requests/26 assertions.
+  Temporary E2E databases dropped; original Postman database/service preserved.
+- Demo start/stop scripts verified. Three demo services use 18081-18083 and separate
+  ridelink_demo_* databases. Existing 8082 service was not stopped by this work.
+- Atomic push of integration and fix branches failed because interactive GitHub
+  sign-in is required. No remote integration update confirmed. Fare/payment and
+  shared legacy-data migration are unfinished; this is three-service completion.
+- Git: this navigation/work-log update is local, prepared for commit on the original
+  student-ID branch. No application code changed in this checkout.
 
 ## Entry template
 

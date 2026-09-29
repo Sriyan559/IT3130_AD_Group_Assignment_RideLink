@@ -1,3 +1,9 @@
+> **2026-09-30 update:** Runnable authenticated Account/Driver/Ride integration is
+> on the `integration` branch (local commit `96f968d`), in the sibling checkout
+> `C:/Users/mashi/Desktop/RideLink-integration`. Open its `integration-tests/README.md`
+> and import its `RideLink-Integration.postman_collection.json`. The historical
+> plan below is not a report of completed fare/payment implementation.
+
 # RideLink Integration Tests
 
 This module establishes the architectural harness for end-to-end integration testing across the four RideLink microservices.
