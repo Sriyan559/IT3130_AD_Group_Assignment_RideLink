@@ -29,6 +29,6 @@ springdoc:
 # Fare Calculation Parameters (Defaults)
 fare:
   base-rate: 150.00
-  per-km-rate: 100.00
+  per-km-rate: 80.00
   per-minute-rate: 10.00
   minimum-fare: 200.00

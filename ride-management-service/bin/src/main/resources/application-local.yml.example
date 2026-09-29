@@ -1,0 +1,23 @@
+# Example Local Development Override Configuration for Ride Management Service
+# Copy to application-local.yml (which is ignored by Git) for local testing
+
+server:
+  port: 8083
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ride_db
+    username: postgres
+    password: local_dev_password
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+services:
+  account:
+    url: http://localhost:8081
+  driver:
+    url: http://localhost:8082
+  payment:
+    url: http://localhost:8084

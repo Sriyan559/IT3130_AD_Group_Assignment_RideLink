@@ -11,5 +11,5 @@ spring:
     password: local_dev_password
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     show-sql: true
