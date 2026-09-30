@@ -609,6 +609,32 @@ Shared repository setup is not a claim of individual contribution by the current
   ignored local files under tmp/local-integration and may contain demo tokens;
   they are not published. Changes prepared for normal commit/push to main/integration.
 
+### 2026-10-01 - Save automated demo evidence
+
+- User requested running the collection and saving results. UI inventory returned
+  no apps/browsers and no Postman connector was available, so desktop import/run
+  and a genuine Postman screenshot could not be performed.
+- Ran the published 81ccb2a collection with cached Newman against the four local
+  services: 37 requests, 53 assertions, zero failures. Generated sanitized HTML/text
+  reports in tmp/local-integration/RideLink-test-evidence.{html,txt}, with request
+  names/status/assertion totals only. Raw reports containing tokens stay ignored.
+- Validated all 37 evidence rows against the actual Newman JSON. Reports explicitly
+  identify Newman execution, not desktop screenshots. No application code changed.
+- This evidence log update is local/uncommitted; desktop import remains user-operated.
+
+### 2026-10-01 - Commit final evidence and work logs
+
+- User requested committing and pushing all remaining work, including AGENTS.md.
+  Preserved the pending evidence log and copied sanitized HTML/text reports into
+  docs/evidence/ for version control. Raw reports, tokens, runtime databases and
+  generated build files remain ignored; no credentials are included in evidence.
+- Confirmed main CI run 36759345753 passed for 81ccb2a. Latest Newman evidence is
+  37 requests/53 assertions with zero failures. Documentation/evidence-only update;
+  no application tests rerun. Checked whitespace and report contents before commit.
+- Reconciled the original student-ID checkout's pending handoff documentation too.
+  Integration evidence/logs and original component logs are committed separately;
+  publishing uses normal fast-forward pushes and retains all component branches.
+
 ## Entry template
 
 ```markdown

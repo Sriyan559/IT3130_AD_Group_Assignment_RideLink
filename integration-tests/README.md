@@ -106,6 +106,11 @@ duplicate. The collection uses the simpler create-unassigned then assign flow.
 See [requirements and evidence](../docs/requirements-status.md). Root `AGENTS.md`
 records actual dated verification results.
 
+Sanitized [October 1 Newman report](../docs/evidence/RideLink-test-evidence-2026-10-01.html)
+and [plain-text results](../docs/evidence/RideLink-test-evidence-2026-10-01.txt)
+record 37 requests and 53 passing assertions. These are automated-run evidence,
+not Postman desktop screenshots; credentials and response bodies are excluded.
+
 ## Fare, payment and receipt flow
 
 The collection now has 37 ordered requests, including fare estimation, automatic

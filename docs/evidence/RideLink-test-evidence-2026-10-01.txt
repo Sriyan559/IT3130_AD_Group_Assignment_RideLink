@@ -1,0 +1,43 @@
+RideLink four-service verification
+2026-10-01T00:04:30+05:30
+Commit: 81ccb2aea57533e3fbf1f4cb1680d803a24aebb8
+37 requests | 53 assertions | 0 failures
+Executed with Newman against four running local services. This is an automated collection report, not a Postman desktop screenshot. Request/response bodies, credentials and tokens are excluded.
+
+01 Register driver account: HTTP 201, assertions 1/1, PASS
+02 Login driver: HTTP 200, assertions 1/1, PASS
+03 Register passenger account: HTTP 201, assertions 1/1, PASS
+04 Login passenger: HTTP 200, assertions 1/1, PASS
+05 Create driver profile: HTTP 201, assertions 1/1, PASS
+06 Register vehicle: HTTP 201, assertions 1/1, PASS
+07 Set AVAILABLE: HTTP 200, assertions 1/1, PASS
+08 Update location: HTTP 200, assertions 1/1, PASS
+09 Find eligible driver: HTTP 200, assertions 2/2, PASS
+10 Estimate fare: HTTP 200, assertions 2/2, PASS
+11 Create ride: HTTP 201, assertions 1/1, PASS
+12 Assign driver: HTTP 200, assertions 3/3, PASS
+13 Check ON_TRIP: HTTP 200, assertions 2/2, PASS
+14 ACCEPTED: HTTP 200, assertions 2/2, PASS
+15 IN_PROGRESS: HTTP 200, assertions 2/2, PASS
+16 COMPLETED: HTTP 200, assertions 3/3, PASS
+17 Check released AVAILABLE: HTTP 200, assertions 2/2, PASS
+18 Wrong owner rejected: HTTP 403, assertions 1/1, PASS
+19 Missing token rejected: HTTP 401, assertions 1/1, PASS
+20 Set OFFLINE: HTTP 200, assertions 1/1, PASS
+21 Get final fare: HTTP 200, assertions 2/2, PASS
+22 Get successful payment: HTTP 200, assertions 1/1, PASS
+23 Get receipt: HTTP 200, assertions 2/2, PASS
+24 Receipt by ride: HTTP 200, assertions 1/1, PASS
+25 Duplicate payment rejected: HTTP 409, assertions 1/1, PASS
+26 Invalid fare input rejected: HTTP 400, assertions 1/1, PASS
+27 Set AVAILABLE for failure scenario: HTTP 200, assertions 1/1, PASS
+28 Refresh location: HTTP 200, assertions 1/1, PASS
+29 Create ride for failure scenario: HTTP 201, assertions 1/1, PASS
+30 Match driver for failure scenario: HTTP 200, assertions 2/2, PASS
+31 ACCEPTED failure scenario: HTTP 200, assertions 1/1, PASS
+32 IN_PROGRESS failure scenario: HTTP 200, assertions 1/1, PASS
+33 COMPLETED failure scenario: HTTP 200, assertions 2/2, PASS
+34 Failed payment has no receipt: HTTP 404, assertions 1/1, PASS
+35 Retry simulated payment: HTTP 200, assertions 2/2, PASS
+36 Retry is idempotent: HTTP 200, assertions 2/2, PASS
+37 Final driver OFFLINE: HTTP 200, assertions 1/1, PASS
