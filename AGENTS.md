@@ -66,8 +66,8 @@ without relying on chat memory. This file applies throughout this repository.
 
 ## Next work (external delivery / optional scale work)
 
-- Integration 88f3fbd is published and hosted CI passed. PR/main merge remains;
-  agent GitHub authentication is unavailable, despite public read access working.
+- Integration implementation is published and hosted CI passed. GitHub write access
+  works using the authorized Dinuli2004 account; PR/main delivery is in progress.
 - Owner must rotate any still-active cloud credentials formerly present in repository
   history; current tracked examples were sanitized without recording their values.
 - Legacy data requires explicit identity mapping before migration; existing shared
@@ -556,6 +556,22 @@ Shared repository setup is not a claim of individual contribution by the current
   in ignored tmp/local-integration/pr-body.txt. No peer approval or main merge is claimed.
 
 ## Entry template
+
+### 2026-09-30 - Resolve GitHub account selection and prepare main integration
+
+- Git Credential Manager had two accounts; unqualified lookup failed. Explicit account
+  lookup confirmed Dinuli2004 has repository write access. Published documentation
+  commit 50a4170 successfully without exposing credentials or changing permissions.
+- GitHub rejected PR creation because main and integration have unrelated histories.
+  Merged main's original f04a7c6 history into integration without rewriting either
+  history. Resolved the sole README add/add conflict using the comprehensive current
+  README, which already covers main's original project description. No application
+  code changed. Existing branches are retained.
+- Fresh fetch also found Fare owner's branch advanced to 56ec753 with domain/service
+  scaffolding. Preserved it without replacing the verified four-service implementation;
+  that branch is not claimed as merged or as this user's individual contribution.
+- Verification: remote access and diff inspection; local application suites not rerun
+  for README/history-only changes. PR and resulting hosted checks are next.
 
 ```markdown
 ### YYYY-MM-DD - Short task title
