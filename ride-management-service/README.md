@@ -139,7 +139,7 @@ Set the environment variable or create `.env` / `application-local.yml`:
 spring:
   data:
     mongodb:
-      uri: mongodb+srv://<username>:<password>@cluster0.mongodb.net/ride_db?retryWrites=true&w=majority
+      uri: mongodb://localhost:27017/ride_db
 ```
 
 ### Start the Microservice:

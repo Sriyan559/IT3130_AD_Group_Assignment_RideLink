@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface RideRepository extends MongoRepository<Ride, UUID> {
+    List<Ride> findTop100ByPaymentPendingTrue();
     List<Ride> findTop100ByReleasePendingTrue();
     List<Ride> findTop100ByPendingDriverIdNotNull();
     List<Ride> findAllByOrderByCreatedAtDesc();

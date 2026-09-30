@@ -18,5 +18,10 @@ public record UpdateRideStatusRequest(
 
         @Schema(description = "Actual trip duration in minutes (typically provided on COMPLETED)", example = "22", nullable = true)
         @DecimalMin(value = "0", message = "durationMinutes must be positive")
-        Long durationMinutes
-) { }
+        Long durationMinutes,
+        boolean simulatePaymentFailure
+) {
+    public UpdateRideStatusRequest(RideStatus status, BigDecimal distanceKm, Long durationMinutes) {
+        this(status,distanceKm,durationMinutes,false);
+    }
+}

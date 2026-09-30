@@ -6,8 +6,8 @@ spring:
     name: fare-payment-service
   datasource:
     url: jdbc:postgresql://${PAYMENT_DB_HOST:localhost}:${PAYMENT_DB_PORT:5432}/${PAYMENT_DB_NAME:payment_db}
-    username: ${PAYMENT_DB_USERNAME:payment_user}
-    password: ${PAYMENT_DB_PASSWORD:payment_password}
+    username: ${PAYMENT_DB_USERNAME}
+    password: ${PAYMENT_DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -32,3 +32,10 @@ fare:
   per-km-rate: 100.00
   per-minute-rate: 10.00
   minimum-fare: 200.00
+
+ridelink:
+  account-url: ${ACCOUNT_SERVICE_URL:http://localhost:8081}
+  service-token: ${RIDELINK_SERVICE_TOKEN:}
+services:
+  ride:
+    url: ${RIDE_SERVICE_URL:http://localhost:8083}

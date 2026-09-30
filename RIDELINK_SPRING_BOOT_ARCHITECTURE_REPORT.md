@@ -1,3 +1,7 @@
+> Implementation update (2026-09-30): this architecture document contains original
+> design/scaffold descriptions. See [current requirements and evidence](docs/requirements-status.md)
+> for implemented routes, database choices and actual verification limitations.
+
 # RideLink - Spring Boot Microservices Architecture Report
 
 **Module:** IT3130 – Application Development  

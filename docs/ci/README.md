@@ -1,16 +1,26 @@
-﻿# Continuous Integration (CI) Architecture
+# Continuous integration
 
-In accordance with IT3130 criteria (LO4, G4):
+`.github/workflows/ci.yml` runs for pushes and pull requests targeting `main`,
+`develop` and `integration`.
 
-CI pipeline is configured via GitHub Actions in .github/workflows/ci.yml.
+- The Java 17 matrix verifies each service with `mvn -B -pl <service> -am verify`.
+  `-am` builds shared dependencies such as `service-support` in the same reactor;
+  building Driver/Ride in isolation cannot resolve a fresh snapshot dependency.
+- After the matrix succeeds, an aggregator job starts a local MongoDB service,
+  enables `RIDELINK_MONGO_TESTS=true`, and runs `mvn -B verify`.
+- The aggregator then runs `integration-tests/run-local-e2e.py` against real Account,
+  Driver, Ride and Fare JARs with authentication enabled and isolated databases.
+- CI E2E uses PostgreSQL 16 for Fare and MongoDB for the other services.
+  Local E2E defaults to a separate H2 SQL file unless E2E_POSTGRES_DSN is provided.
 
-Pipeline stages:
-1. Checkout repository
-2. Set up JDK 17
-3. Cache Maven dependencies
-4. Clean and test all four microservices in parallel / matrix:
-   - Account Service (mvn clean test in account-service)
-   - Driver & Vehicle Service (mvn clean test in driver-vehicle-service)
-   - Ride Management Service (mvn clean test in ride-management-service)
-   - Fare & Payment Service (mvn clean test in fare-payment-service)
-5. Verify reproducible build status
+Local equivalent (MongoDB required):
+
+```powershell
+$env:RIDELINK_MONGO_TESTS = 'true'
+mvn -B verify
+python -m pip install -r integration-tests/requirements.txt
+python integration-tests/run-local-e2e.py
+```
+
+Hosted GitHub Actions results must be checked after publication; a successful local
+run is not a claim that a hosted workflow has passed.

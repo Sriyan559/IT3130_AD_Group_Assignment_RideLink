@@ -1,5 +1,10 @@
 # RideLink
 
+**Current implementation (2026-09-30):** all seven backend workflows are implemented
+on `integration`. Start with the [four-service demo guide](integration-tests/README.md)
+and [requirements/evidence table](docs/requirements-status.md). The shared
+`service-support` module is a library, not a fifth microservice.
+
 **IT3130 – Application Development: Group Assignment (30%)**  
 **Backend Microservices for a Ride-Sharing Platform**
 
@@ -18,10 +23,10 @@ The RideLink platform is decomposed into **exactly four core microservices**, wi
 
 | # | Microservice | Primary Owner | Student ID | Primary Responsibilities | Current Status |
 | :-: | :--- | :--- | :--- | :--- | :-: |
-| **1** | **Account Service** | **Fernando B S C** | IT24103775 | Passenger & driver registration, authentication, JWT tokens, RBAC roles, profile management. | `STRUCTURE READY`<br>`NOT IMPLEMENTED` |
-| **2** | **Driver & Vehicle Service** | **Rathnakoon D A** | IT24300246 | Driver operational profile, vehicle registration, availability toggle, simulated GPS location, driver querying. | `STRUCTURE READY`<br>`NOT IMPLEMENTED` |
-| **3** | **Ride Management Service** | **Herath H M S R** | IT24103280 | Ride request creation, state machine lifecycle transitions (REQUESTED -> COMPLETED), driver assignment, trip tracking. | `STRUCTURE READY`<br>`NOT IMPLEMENTED` |
-| **4** | **Fare & Payment Service** | **Sanjeewa H.D.U.S** | IT24101590 | Upfront fare estimates, deterministic final fare calculation, simulated payments, transaction ledger, receipts. | `STRUCTURE READY`<br>`NOT IMPLEMENTED` |
+| **1** | **Account Service** | **Fernando B S C** | IT24103775 | Passenger & driver registration, authentication, JWT tokens, RBAC roles, profile management. | `IMPLEMENTED` |
+| **2** | **Driver & Vehicle Service** | **Rathnakoon D A** | IT24300246 | Driver operational profile, vehicle registration, availability toggle, simulated GPS location, driver querying. | `IMPLEMENTED` |
+| **3** | **Ride Management Service** | **Herath H M S R** | IT24103280 | Ride request creation, state machine lifecycle transitions (REQUESTED -> COMPLETED), driver assignment, trip tracking. | `IMPLEMENTED` |
+| **4** | **Fare & Payment Service** | **Sanjeewa H.D.U.S** | IT24101590 | Upfront fare estimates, deterministic final fare calculation, simulated payments, transaction ledger, receipts. | `IMPLEMENTED` |
 
 ---
 
@@ -31,7 +36,8 @@ The RideLink platform is decomposed into **exactly four core microservices**, wi
 - **Backend Framework:** Spring Boot 3.3.4
 - **Build System:** Apache Maven (Multi-module parent + independent service POMs)
 - **Persistence Technologies:**
-  - **Document (MongoDB):** Account Service (`account_db`), Driver & Vehicle Service (`driver_db`), Ride Management Service (`ride_db`), Fare & Payment Service (`payment_db`)
+  - **Document (MongoDB):** Account Service (`account_db`), Driver & Vehicle Service (`driver_db`), Ride Management Service (`ride_db`)
+  - **SQL:** Fare & Payment (`payment_db`), PostgreSQL by default; isolated H2 for local demo/tests.
 - **API Documentation:** Springdoc OpenAPI 2.5.0 / Swagger UI
 - **Demonstration & Testing:** Swagger UI & Postman Collection v2.1.0
 - **Continuous Integration:** GitHub Actions (`.github/workflows/ci.yml`)

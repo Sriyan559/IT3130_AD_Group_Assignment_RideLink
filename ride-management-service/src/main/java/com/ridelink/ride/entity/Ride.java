@@ -13,6 +13,21 @@ import org.springframework.data.mongodb.core.mapping.Document;
  */
 @Document("rides")
 public class Ride {
+    private boolean paymentPending;
+    private boolean simulatePaymentFailure;
+    private UUID paymentId;
+    private UUID receiptId;
+    private String paymentStatus;
+    public boolean isPaymentPending() {return paymentPending;}
+    public void setPaymentPending(boolean value) {paymentPending=value;}
+    public boolean isSimulatePaymentFailure() {return simulatePaymentFailure;}
+    public void setSimulatePaymentFailure(boolean value) {simulatePaymentFailure=value;}
+    public UUID getPaymentId() {return paymentId;}
+    public void setPaymentId(UUID value) {paymentId=value;}
+    public UUID getReceiptId() {return receiptId;}
+    public void setReceiptId(UUID value) {receiptId=value;}
+    public String getPaymentStatus() {return paymentStatus;}
+    public void setPaymentStatus(String value) {paymentStatus=value;}
     @org.springframework.data.annotation.Version
     private Long version;
     private String pendingDriverId;

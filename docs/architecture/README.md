@@ -1,3 +1,7 @@
+> Implementation update (2026-09-30): this architecture document contains original
+> design/scaffold descriptions. See [current requirements and evidence](../requirements-status.md)
+> for implemented routes, database choices and actual verification limitations.
+
 # RideLink Architecture Documentation
 
 This section provides comprehensive architectural specifications for the RideLink backend microservices platform, designed in accordance with the IT3130 Application Development specification.

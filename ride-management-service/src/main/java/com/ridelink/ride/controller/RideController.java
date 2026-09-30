@@ -46,6 +46,13 @@ public class RideController {
         this.service = service;
     }
 
+    @PostMapping("/{rideId}/assign")
+    @Operation(summary="Find and reserve the nearest eligible driver")
+    public RideResponse match(@PathVariable UUID rideId,
+            @RequestParam(defaultValue="5") java.math.BigDecimal radius) {
+        return service.matchDriver(rideId,radius);
+    }
+
     @PostMapping
     @Operation(summary = "Create a new ride request", description = "Initiates a ride booking. Sets status to REQUESTED (or ASSIGNED if driverId is provided).")
     @ApiResponses({

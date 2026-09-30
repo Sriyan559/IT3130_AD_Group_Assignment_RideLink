@@ -16,6 +16,16 @@ public class DriverGateway {
     private final String url;
     private final String token;
     public record Profile(String id, String accountId, String availabilityStatus) {}
+    public record Candidate(String driverId) {}
+    public java.util.List<Candidate> eligible(java.math.BigDecimal lat,java.math.BigDecimal lng,java.math.BigDecimal radius) {
+        if(token.length()<32) throw new AccessFailure(503,"Driver service credentials not configured");
+        HttpHeaders headers=new HttpHeaders();headers.set("X-Service-Token",token);
+        try {
+            Candidate[] matches=http.exchange(url+"/internal/drivers/eligible?lat={lat}&lng={lng}&radius={radius}",
+                    HttpMethod.GET,new HttpEntity<>(headers),Candidate[].class,lat,lng,radius).getBody();
+            return matches==null?java.util.List.of():java.util.Arrays.asList(matches);
+        } catch(RestClientException ex) {throw new AccessFailure(503,"Driver search unavailable");}
+    }
     public DriverGateway(@Value("${ridelink.driver-url:http://localhost:8082}") String url,
             @Value("${ridelink.service-token:}") String token) { this.url = url; this.token = token; }
     public Profile get(String driverId) { return call(HttpMethod.GET, "/internal/drivers/{driverId}", driverId); }

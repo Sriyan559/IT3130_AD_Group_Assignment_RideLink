@@ -15,7 +15,7 @@ The RideLink platform is decomposed into **exactly four core microservices**, st
 - **Primary Owner:** Fernando B S C (Student ID: IT24103775)
 - **Base Package:** `com.ridelink.account`
 - **Default Port:** `8081`
-- **Persistence Boundary:** `account_db` (PostgreSQL)
+- **Persistence Boundary:** `account_db` (MongoDB)
 
 ### Responsibilities:
 1. User registration for passengers and drivers.
@@ -47,7 +47,7 @@ The RideLink platform is decomposed into **exactly four core microservices**, st
 - **Primary Owner:** Herath H M S R (Student ID: IT24103280)
 - **Base Package:** `com.ridelink.ride`
 - **Default Port:** `8083`
-- **Persistence Boundary:** `ride_db` (PostgreSQL)
+- **Persistence Boundary:** `ride_db` (MongoDB)
 
 ### Responsibilities:
 1. Ride booking request creation (specifying passenger, pickup, and destination coordinates).
@@ -70,6 +70,6 @@ The RideLink platform is decomposed into **exactly four core microservices**, st
 1. Upfront fare estimation based on distance, duration estimate, and base tariff rules.
 2. Deterministic final fare calculation upon trip completion.
 3. Processing simulated payment transactions against ride IDs.
-4. Payment transaction lifecycle tracking (`PENDING`, `COMPLETED`, `FAILED`, `REFUNDED`).
+4. Payment transaction lifecycle tracking (`SUCCESS`, `FAILED` for the implemented synchronous simulation; refunds are not part of the minimum assessed workflow).
 5. Generating immutable payment receipts with itemized breakdown.
 6. Receipt retrieval by receipt ID or ride ID.

@@ -1,5 +1,5 @@
 """Build first, then run with Python 3 + pymongo and local MongoDB on 27017.
-Uses three temporary databases and ports 18081-18083. Never uses cloud configuration.
+Uses three temporary Mongo databases, a temporary SQL database and ports 18081-18084. Never uses cloud configuration.
 """
 import concurrent.futures
 import json
@@ -17,13 +17,16 @@ from pymongo import MongoClient
 ROOT = Path(__file__).resolve().parents[1]
 RUN = uuid.uuid4().hex
 DATABASES = {s: f"ridelink_e2e_{RUN}_{s}" for s in ("account", "driver", "ride")}
-PORTS = {"account": 18081, "driver": 18082, "ride": 18083}
-MODULES = {"account": "account-service", "driver": "driver-vehicle-service", "ride": "ride-management-service"}
+PORTS = {"account": 18081, "driver": 18082, "ride": 18083, "payment": 18084}
+MODULES = {"account": "account-service", "driver": "driver-vehicle-service", "ride": "ride-management-service", "payment": "fare-payment-service"}
 TOKEN = secrets.token_hex(32)
 JWT = secrets.token_hex(32)
 PROCESSES = {}
 LOGS = []
 CHECKS = 0
+POSTGRES_DSN = os.environ.get("E2E_POSTGRES_DSN")
+SQL_DATABASE = "ridelink_e2e_" + RUN
+postgres = None
 mongo = MongoClient("mongodb://localhost:27017", serverSelectionTimeoutMS=3000, uuidRepresentation="standard")
 
 
@@ -50,14 +53,22 @@ def request(service, method, path, body=None, token=None, expected=200, internal
 
 def start(service):
     env = os.environ.copy()
-    env.update({"SPRING_PROFILES_ACTIVE": "e2e", "SERVER_PORT": str(PORTS[service]),
-                "SPRING_DATA_MONGODB_URI": f"mongodb://localhost:27017/{DATABASES[service]}",
-                "SPRING_DATA_MONGODB_DATABASE": DATABASES[service],
+    database = DATABASES.get(service, "unused")
+    env.update({"SPRING_PROFILES_ACTIVE": "demo" if service == "payment" else "e2e", "SERVER_PORT": str(PORTS[service]),
+                "SPRING_DATA_MONGODB_URI": f"mongodb://localhost:27017/{database}",
+                "SPRING_DATA_MONGODB_DATABASE": database,
                 "SPRING_DATA_MONGODB_HOST": "localhost", "SPRING_DATA_MONGODB_PORT": "27017",
-                "DRIVER_DB_NAME": DATABASES[service], "MONGODB_DATABASE": DATABASES[service],
+                "DRIVER_DB_NAME": database, "MONGODB_DATABASE": database,
                 "JWT_SECRET": JWT, "RIDELINK_SERVICE_TOKEN": TOKEN, "RIDELINK_SECURITY_ENABLED": "true",
                 "ACCOUNT_SERVICE_URL": "http://127.0.0.1:18081", "DRIVER_SERVICE_URL": "http://127.0.0.1:18082",
+                "PAYMENT_SERVICE_URL": "http://127.0.0.1:18084", "RIDE_SERVICE_URL": "http://127.0.0.1:18083",
+                "PAYMENT_DEMO_URL": "jdbc:h2:file:" + (ROOT / "tmp" / "e2e" / RUN / "payment").as_posix() + ";MODE=PostgreSQL;DB_CLOSE_ON_EXIT=FALSE",
                 "LOGGING_LEVEL_ROOT": "WARN", "DRIVER_LOCATION_MAX_AGE_SECONDS": "300"})
+    if service == "payment" and postgres is not None:
+        info = postgres.info
+        env.update({"SPRING_PROFILES_ACTIVE": "e2e", "PAYMENT_DB_HOST": info.host,
+                    "PAYMENT_DB_PORT": str(info.port), "PAYMENT_DB_NAME": SQL_DATABASE,
+                    "PAYMENT_DB_USERNAME": info.user, "PAYMENT_DB_PASSWORD": info.password})
     jar = ROOT / MODULES[service] / "target" / (MODULES[service] + "-1.0.0-SNAPSHOT.jar")
     assert jar.exists(), "Run Maven verify before this script"
     logdir = ROOT / "tmp" / "e2e" / RUN
@@ -101,7 +112,13 @@ def account(role, number):
 
 
 def run():
+    global postgres
     mongo.admin.command("ping")
+    if POSTGRES_DSN:
+        import psycopg
+        from psycopg import sql
+        postgres = psycopg.connect(POSTGRES_DSN, autocommit=True)
+        postgres.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(SQL_DATABASE)))
     for port in PORTS.values():
         with socket.socket() as sock:
             sock.bind(("127.0.0.1", port))
@@ -109,7 +126,7 @@ def run():
         start(service)
     for service in PORTS:
         ready(service)
-    print("Three services started with authentication enabled and isolated local databases.", flush=True)
+    print("Four services started with authentication enabled and isolated local databases.", flush=True)
     driver_account, driver_token = account("driver", 1)
     other_driver, other_token = account("driver", 2)
     passenger, passenger_token = account("passenger", 3)
@@ -134,7 +151,7 @@ def run():
     create(other_passenger,passenger_token,403)
     ride=create(); path="/api/v1/rides/"+ride["id"]
     request("ride","GET",path,token=stranger,expected=403)
-    request("ride","PATCH",path+"/assign-driver/"+driver,token=passenger_token)
+    request("ride","POST",path+"/assign?radius=5",token=passenger_token)
     request("ride","PATCH",path+"/assign-driver/"+driver,token=passenger_token)
     assert request("driver","GET",driver_path,token=driver_token)["availabilityStatus"]=="ON_TRIP"
     assert request("driver","GET",search,token=passenger_token)==[]
@@ -142,9 +159,36 @@ def run():
     request("ride","PATCH",path+"/status",{"status":"ACCEPTED"},passenger_token,403)
     request("ride","PATCH",path+"/status",{"status":"ACCEPTED"},other_token,403)
     for status in ("ACCEPTED","IN_PROGRESS","COMPLETED"):
-        request("ride","PATCH",path+"/status",{"status":status},driver_token)
+        request("ride","PATCH",path+"/status",{"status":status,"distanceKm":8,"durationMinutes":20},driver_token)
     assert request("driver","GET",driver_path,token=driver_token)["availabilityStatus"]=="AVAILABLE"
     print("PASS: account verification, ownership, assignment, ON_TRIP protection and completion release.",flush=True)
+    completed=request("ride","GET",path,token=passenger_token)
+    assert completed["paymentStatus"]=="SUCCESS" and completed["receiptId"]
+    receipt=request("payment","GET","/api/v1/receipts/"+completed["receiptId"],token=passenger_token)
+    assert receipt["total"]==1150 and receipt["rideId"]==ride["id"]
+    request("payment","GET","/api/v1/receipts/"+completed["receiptId"],token=stranger,expected=403)
+    request("payment","GET","/api/v1/receipts/"+completed["receiptId"],expected=401)
+    estimate=request("payment","POST","/api/v1/fare/estimate",{"distanceKilometers":8,"durationMinutes":20},passenger_token)
+    assert estimate["total"]==1150
+    request("payment","POST","/api/v1/fare/estimate",{"distanceKilometers":-1,"durationMinutes":20},passenger_token,400)
+    request("payment","POST","/api/v1/payments/process",{"rideId":ride["id"],"idempotencyKey":"duplicate","paymentMethod":"CARD","simulateFailure":False},passenger_token,409)
+    failed_ride=create(); failed_path="/api/v1/rides/"+failed_ride["id"]
+    request("ride","POST",failed_path+"/assign",token=passenger_token)
+    unavailable=create()
+    request("ride","POST","/api/v1/rides/"+unavailable["id"]+"/assign",token=passenger_token,expected=409)
+    request("ride","PATCH",failed_path+"/status",{"status":"COMPLETED","distanceKm":8,"durationMinutes":20},driver_token,409)
+    for state in ("ACCEPTED","IN_PROGRESS"):
+        request("ride","PATCH",failed_path+"/status",{"status":state},driver_token)
+    failure=request("ride","PATCH",failed_path+"/status",{"status":"COMPLETED","distanceKm":8,"durationMinutes":20,"simulatePaymentFailure":True},driver_token)
+    assert failure["paymentStatus"]=="FAILED" and failure["receiptId"] is None
+    request("payment","GET","/api/v1/receipts/ride/"+failed_ride["id"],token=passenger_token,expected=404)
+    retry_body={"rideId":failed_ride["id"],"idempotencyKey":"passenger-retry","paymentMethod":"CARD","simulateFailure":False}
+    retry=request("payment","POST","/api/v1/payments/process",retry_body,passenger_token)
+    assert retry["status"]=="SUCCESS" and retry["receiptId"]
+    assert request("payment","POST","/api/v1/payments/process",retry_body,passenger_token)["id"]==retry["id"]
+    request("payment","POST","/api/v1/payments/process",{**retry_body,"simulateFailure":True},passenger_token,409)
+    print("PASS: estimate, automatic final fare/payment, immutable receipts, failure/retry, duplicate prevention and negative scenarios.",flush=True)
+
 
     # Race two different rides against one driver, using real concurrent HTTP requests.
     rides=[create(),create()]
@@ -178,6 +222,30 @@ def run():
     else:
         raise AssertionError("Release recovery did not finish")
     assert request("driver","GET",driver_path,token=driver_token)["availabilityStatus"]=="AVAILABLE"
+    # Payment intent also survives a lost dependency and a Ride restart.
+    request("driver","PUT",driver_path+"/location",{"latitude":6.9271,"longitude":79.8612},driver_token)
+    recovery=create(); recovery_path="/api/v1/rides/"+recovery["id"]
+    request("ride","POST",recovery_path+"/assign",token=passenger_token)
+    for state in ("ACCEPTED","IN_PROGRESS"):
+        request("ride","PATCH",recovery_path+"/status",{"status":state},driver_token)
+    stop("payment")
+    request("ride","PATCH",recovery_path+"/status",{"status":"COMPLETED","distanceKm":8,"durationMinutes":20},driver_token,503)
+    assert request("ride","GET",recovery_path,token=passenger_token)["paymentPending"]
+    assert request("driver","GET",driver_path,token=driver_token)["availabilityStatus"]=="AVAILABLE"
+    stop("ride"); start("ride"); ready("ride")
+    start("payment"); ready("payment")
+    deadline=time.monotonic()+30
+    while time.monotonic()<deadline:
+        recovered=request("ride","GET",recovery_path,token=passenger_token)
+        if not recovered["paymentPending"]:
+            break
+        time.sleep(0.5)
+    else:
+        raise AssertionError("Payment recovery did not finish")
+    assert recovered["paymentStatus"]=="SUCCESS"
+    request("payment","GET","/api/v1/receipts/"+recovered["receiptId"],token=passenger_token)
+    assert len(request("payment","GET","/api/v1/payments/ride/"+recovery["id"],token=passenger_token))==1
+    print("PASS: payment intent recovers across restart with one persisted payment and receipt.",flush=True)
     stop("account")
     request("driver","GET",driver_path,token=driver_token,expected=503)
     request("ride","GET",next_path,token=passenger_token,expected=503)
@@ -197,4 +265,10 @@ if __name__=="__main__":
             assert db.startswith("ridelink_e2e_"+RUN+"_")
             mongo.drop_database(db)
         mongo.close()
-        print("Stopped test processes and dropped only this run's three temporary databases.",flush=True)
+        if postgres is not None:
+            from psycopg import sql
+            postgres.execute(sql.SQL("DROP DATABASE IF EXISTS {}").format(sql.Identifier(SQL_DATABASE)))
+            postgres.close()
+        for suffix in (".mv.db", ".trace.db"):
+            (ROOT / "tmp" / "e2e" / RUN / ("payment"+suffix)).unlink(missing_ok=True)
+        print("Stopped test processes and removed only this run's isolated Mongo/SQL data.",flush=True)

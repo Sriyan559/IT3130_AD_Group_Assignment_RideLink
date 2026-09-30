@@ -1,3 +1,6 @@
+> Current executable flow and recovery semantics: [integration guide](../../integration-tests/README.md).
+> The sequence below is conceptual; use documented runtime routes and explicit create/assign calls.
+
 # Interservice Communication Design
 
 **Module:** IT3130 – Application Development  
@@ -28,14 +31,14 @@ In compliance with LO2 (*"Compare available inter-application communication meth
 ### Interaction 1: Ride Request -> Eligible Driver Matching & Reservation
 - **Caller:** `Ride Management Service` (Port 8083)
 - **Target:** `Driver & Vehicle Service` (Port 8082)
-- **Endpoint:** `GET /api/v1/drivers/eligible?lat={lat}&lng={lng}&radius={radius}`
+- **Endpoint:** `GET /internal/drivers/eligible?lat={lat}&lng={lng}&radius={radius}`
 - **Purpose:** When a ride is requested, Ride Management queries Driver & Vehicle Service to obtain available drivers within the pickup area.
-- **Subsequent Action:** `PATCH /api/v1/drivers/{driverId}/status` updates driver state to `ON_TRIP`.
+- **Subsequent Action:** `PUT /internal/drivers/{driverId}/reservations/{rideId}` atomically reserves ON_TRIP. Calls require a service token.
 
 ### Interaction 2: Ride Completion -> Final Fare & Payment Processing
 - **Caller:** `Ride Management Service` (Port 8083)
 - **Target:** `Fare & Payment Service` (Port 8084)
-- **Endpoint:** `POST /api/v1/payments/process`
+- **Endpoint:** `POST /internal/payments/process`
 - **Purpose:** Upon trip completion (`IN_PROGRESS` -> `COMPLETED`), Ride Management transmits final trip telemetry (distance, elapsed time, passengerId, rideId) to compute final fare and simulate payment.
 - **Output:** Returns payment confirmation and receipt ID.
 

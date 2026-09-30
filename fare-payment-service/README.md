@@ -1,110 +1,74 @@
 # Fare & Payment Service
 
-**IT3130 – Application Development: Group Assignment**  
-**Component:** Fare & Payment Service Microservice  
-**Primary Owner:** Sanjeewa H.D.U.S (Student ID: IT24101590)  
-**Status:** `FARE ESTIMATES, FINAL FARES, AND SIMULATED PAYMENTS IMPLEMENTED`
+Owner: Sanjeewa H.D.U.S (IT24101590). Integration implementation completed at the
+user's request on the shared `integration` branch; original component history is retained.
 
----
+Java 17 / Spring Boot 3.3.4. Default port 8084. PostgreSQL owns final fares, simulated
+payment attempts and immutable receipt snapshots. Account/Driver/Ride databases are
+accessed only through their HTTP APIs, never through this service's repositories.
 
-## 1. Responsibilities
-- Upfront fare estimation based on simulated distance, estimated duration, and base rules
-- Final fare calculation upon trip completion using documented formula
-- Simulated payment execution and transaction recording
-- Payment status (`SUCCESS` or `FAILED`)
-- Transaction reference and payment retrieval
+## Run and demonstrate
 
-The fare rule is Rs. 150 base fare plus Rs. 100 per kilometer. Distances must be
-positive, and calculated fares are rounded to two decimal places.
+Use the repository [four-service launcher and Postman guide](../integration-tests/README.md).
+The launcher uses port 18084 and persistent H2 SQL in the explicit `demo` profile.
+Default production-style configuration remains PostgreSQL with Flyway migrations:
+PAYMENT_DB_HOST, PAYMENT_DB_PORT, PAYMENT_DB_NAME, PAYMENT_DB_USERNAME and
+PAYMENT_DB_PASSWORD. Supply ACCOUNT_SERVICE_URL, RIDE_SERVICE_URL and the shared
+RIDELINK_SERVICE_TOKEN. Public endpoints verify Account JWTs and passenger ownership.
+Swagger: `/swagger-ui/index.html`; use Authorize with the passenger Bearer token.
 
-### Fare Estimate API
+## Fare rule
 
-`POST /api/fares/estimate`
+Distance must be >0 and <=10000 km; duration 0-100000 minutes.
+Each component is rounded HALF_UP to two decimals:
 
-Request:
-```json
-{"distanceKilometers": 8}
-```
+`max(200, 150 + 100 * distanceKilometers + 10 * durationMinutes)` in LKR.
 
-Response:
-```json
-{"distanceKilometers": 8, "estimatedFare": 950.00, "currency": "LKR"}
-```
+Rates are configurable using `fare.base-rate`, `fare.per-km-rate`,
+`fare.per-minute-rate` and `fare.minimum-fare`. Final fare components are stored once
+per completed ride and remain stable across rate changes. Example: 8 km / 20 minutes
+returns LKR 1150.00. No tax/surge/refund system is claimed.
 
-### Final Fare API
+## Public API
 
-`POST /api/fares/final` calculates and stores one final fare per ride. The request
-uses the ride service's stable ride ID; no cross-service database access is used.
+| Method | Route | Input / behavior |
+|---|---|---|
+| POST | `/api/v1/fare/estimate` | distanceKilometers, durationMinutes; itemized estimate |
+| POST | `/api/v1/fare/final` | rideId; metrics fetched from completed Ride |
+| GET | `/api/v1/fare/final/{rideId}` | Stored final fare |
+| POST | `/api/v1/payments/process` | rideId, idempotencyKey, paymentMethod CARD/CASH, simulateFailure |
+| GET | `/api/v1/payments/{paymentId}` | Attempt status and transaction reference |
+| GET | `/api/v1/payments/ride/{rideId}` | Payment history |
+| GET | `/api/v1/receipts/{receiptId}` | Immutable itemized receipt |
+| GET | `/api/v1/receipts/ride/{rideId}` | Successful receipt for ride |
 
-```json
-{"rideId": "<ride-uuid>", "distanceKilometers": 8}
-```
+Compatibility aliases: `/api/fares/estimate`, `/api/fares/final`,
+`/api/fares/final/{rideId}`, `/api/payments`, `/api/payments/{paymentId}`.
+Account IDs are String; ride/payment/receipt IDs are UUID. Do not submit a client
+amount or passenger ID to determine a charge: these come from trusted Ride/fare data.
 
-`GET /api/fares/final/{rideId}` retrieves the persisted fare breakdown.
+Ride calls the service-token protected `/internal/payments/process` after completing
+and persisting a trip. The service calls `/internal/rides/{id}` for current trip data.
+These endpoints are hidden from public Swagger and reject user JWTs without a service token.
 
-### Simulated Payment API
+## Payments and consistency
 
-`POST /api/payments` records a payment attempt. Set `simulateFailure` to `true`
-to persist a `FAILED` attempt; otherwise the simulated result is `SUCCESS`.
+This is a simulation: no cards, banks or external payment networks are contacted.
+SUCCESS creates one receipt; FAILED creates no receipt and has no paidAt timestamp.
+A failed attempt can be retried with a new idempotencyKey. Identical-key retries
+return the original attempt. Changed-key payload reuse or a second successful payment
+returns 409. Pessimistic SQL locking on the fare serializes payment attempts; unique
+constraints defend IDs and receipt cardinality. Payment, receipt and fare linkage
+commit in one transaction. There is no API to edit or delete receipts.
 
-```json
-{
-	"rideId": "<ride-uuid>",
-	"passengerId": "<passenger-uuid>",
-	"amount": 950.00,
-	"paymentMethod": "CARD",
-	"simulateFailure": false
-}
-```
+Ride retains paymentPending across outages and retries its stable completion key.
+A successful later passenger retry is visible in payment history/receipt-by-ride;
+Ride's stored payment fields describe its original automatic completion attempt.
 
-`GET /api/payments/{paymentId}` retrieves the stored result. Payments use
-`payment_db`; Flyway creates the fare and payment tables at startup.
+## Verification
 
-## 2. Technology & Architecture
-- **Language:** Java 17
-- **Framework:** Spring Boot 3.3.4
-- **Persistence:** PostgreSQL (`payment_db`) - guarantees ACID transactions and ledger-style immutability for receipts
-- **API Documentation:** Springdoc OpenAPI / Swagger UI
-- **Port:** `8084` (configurable via `PAYMENT_SERVICE_PORT`)
-- **Swagger URL:** `http://localhost:8084/swagger-ui/index.html`
-- **OpenAPI JSON:** `http://localhost:8084/v3/api-docs`
-
-## 3. Package Structure
-```
-src/main/java/com/ridelink/payment/
-├── FarePaymentServiceApplication.java
-├── config/          # OpenAPI and app configuration
-├── controller/      # REST API endpoints for estimates, payments, receipts
-├── dto/             # Request & Response Data Transfer Objects
-├── domain/          # Core domain models, enums (PaymentStatus, Currency)
-├── fare/            # Fare calculation logic, rates, estimation rules
-├── payment/         # Payment simulation entities and records
-├── receipt/         # Receipt generation and formatting models
-├── entity/          # JPA entities mapped to payment_db
-├── repository/      # Spring Data JPA repositories
-├── service/         # Business service interfaces
-├── validation/      # Input validations
-├── exception/       # Custom exceptions & global handler
-├── mapper/          # Entity-DTO mapping
-└── integration/     # Outbound notification/event adapters
-```
-
-## 4. Database Isolation
-- Dedicated database: `payment_db` (PostgreSQL), migrated by Flyway.
-- `fare_records` stores a final fare breakdown and unique ride ID.
-- `payments` stores every simulated payment attempt, its status, transaction reference, and timestamps.
-- Other services may provide stable identifiers through APIs but cannot query or modify this database.
-
-The final-fare endpoint accepts a ride ID and distance after ride completion. The payment endpoint
-stores `SUCCESS` by default or `FAILED` when `simulateFailure` is true. Failed attempts have no
-`paidAt` timestamp; both outcomes remain retrievable by payment ID.
-
-## 5. Build and Run
-```bash
-# Build
-mvn clean package -DskipTests
-
-# Run independently
-mvn spring-boot:run
-```
-*(Receipt generation/retrieval and payment retries remain to be implemented.)*
+Fare has nine tests for formula boundaries/rounding, Flyway/JPA persistence,
+idempotency, failed-payment retry, immutable fare amounts and concurrent payments.
+Local verification uses H2 PostgreSQL mode; four-service E2E includes ownership,
+receipts and payment-outage recovery across process restarts. Hosted CI is configured
+for real PostgreSQL; local H2 results are not a PostgreSQL test-pass claim.

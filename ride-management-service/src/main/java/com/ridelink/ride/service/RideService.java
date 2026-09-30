@@ -18,6 +18,9 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class RideService {
+    private com.ridelink.ride.integration.PaymentGateway payments;
+    @org.springframework.beans.factory.annotation.Autowired
+    public void setPaymentGateway(com.ridelink.ride.integration.PaymentGateway payments) {this.payments=payments;}
     private com.ridelink.ride.integration.DriverGateway drivers;
     @org.springframework.beans.factory.annotation.Autowired
     public void setDriverGateway(com.ridelink.ride.integration.DriverGateway drivers) { this.drivers = drivers; }
@@ -114,10 +117,17 @@ public class RideService {
         if (ride.getPendingDriverId() != null)
             throw new com.ridelink.support.AccessFailure(409, "Assignment pending; retry after reconciliation");
         if (ride.getStatus() == request.status() && terminal(ride)) {
-            return mapper.toResponse(release(ride));
+            return mapper.toResponse(settle(release(ride)));
         }
         lifecycle.validate(ride.getStatus(), request.status());
+        if(request.status()==RideStatus.COMPLETED && (request.distanceKm()==null || request.distanceKm().signum()<=0
+                || request.distanceKm().compareTo(new java.math.BigDecimal("10000"))>0
+                || request.durationMinutes()==null || request.durationMinutes()<0 || request.durationMinutes()>100000))
+            throw new com.ridelink.support.AccessFailure(400,"Completion requires distance 0-10000 km (exclusive zero) and duration 0-100000 minutes");
         ride.setStatus(request.status());
+        if(request.status()==RideStatus.COMPLETED) {
+            ride.setPaymentPending(true);ride.setSimulatePaymentFailure(request.simulatePaymentFailure());
+        }
         if (request.distanceKm() != null) {
             ride.setDistanceKm(request.distanceKm());
         }
@@ -126,7 +136,7 @@ public class RideService {
         }
         ride.prepareForSave();
         ride.setReleasePending(terminal(ride) && ride.getDriverId() != null);
-        return mapper.toResponse(release(repository.save(ride)));
+        return mapper.toResponse(settle(release(repository.save(ride))));
     }
 
     public void cancel(UUID rideId) {
@@ -164,6 +174,33 @@ public class RideService {
                 // Release is scoped to rideId, so retry cannot release a later reservation.
             }
         }
+        for(Ride ride:repository.findTop100ByPaymentPendingTrue()) {
+            try {settle(ride);}
+            catch(com.ridelink.support.AccessFailure | org.springframework.dao.DataAccessException ex) {
+                // Same completion idempotency key prevents duplicate payment on recovery.
+            }
+        }
+    }
+
+    public RideResponse matchDriver(UUID rideId,java.math.BigDecimal radius) {
+        if(radius==null || radius.signum()<=0 || radius.compareTo(new java.math.BigDecimal("50"))>0)
+            throw new com.ridelink.support.AccessFailure(400,"Radius must be greater than zero and at most 50 km");
+        Ride ride=find(rideId);
+        if(ride.getStatus()==RideStatus.ASSIGNED) return mapper.toResponse(ride);
+        if(ride.getStatus()!=RideStatus.REQUESTED) throw new com.ridelink.support.AccessFailure(409,"Only REQUESTED rides can be matched");
+        if(ride.getPendingDriverId()!=null) return assignDriver(rideId,ride.getPendingDriverId());
+        for(var candidate:drivers.eligible(ride.getPickupLatitude(),ride.getPickupLongitude(),radius)) {
+            try {return assignDriver(rideId,candidate.driverId());}
+            catch(com.ridelink.support.AccessFailure ex) {if(ex.status()!=409) throw ex;}
+        }
+        throw new com.ridelink.support.AccessFailure(409,"NO_AVAILABLE_DRIVER");
+    }
+
+    private Ride settle(Ride ride) {
+        if(!ride.isPaymentPending()) return ride;
+        var result=payments.process(ride.getId(),ride.isSimulatePaymentFailure());
+        ride.setPaymentId(result.id());ride.setReceiptId(result.receiptId());ride.setPaymentStatus(result.status());
+        ride.setPaymentPending(false);ride.prepareForSave();return repository.save(ride);
     }
 
     private Ride find(UUID rideId) {

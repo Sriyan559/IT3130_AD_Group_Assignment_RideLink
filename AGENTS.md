@@ -42,36 +42,39 @@ without relying on chat memory. This file applies throughout this repository.
 
 ## Current state (last checked 2026-09-30)
 
-- This checkout is the authorized cross-service `integration` branch, in sibling
-  worktree C:/Users/mashi/Desktop/RideLink-integration. The original student-ID
-  branch and its existing Postman database/service are preserved separately.
-- Merged Driver branch, Account 9fd1dea, Ride String-ID fix e71492d (based on
-  9b34d37), and Fare branch 7978efd. Fare remains a scaffold, not completed payments.
-- Six Driver endpoints remain implemented: create/read, vehicle registration,
-  availability, location and eligible search. Search requires AVAILABLE, vehicle,
-  valid fresh location (300 seconds) and radius >0 up to 50 km; it does not reserve.
-- Account GET /api/accounts/me verifies current ACTIVE account/JWT. Driver and Ride
-  require verified tokens and enforce role/ownership by default. Internal Driver
-  calls require a configured service token. Dependency failures deny access with 503.
-- Atomic internal reserve/release links ON_TRIP to one ride. Unique partial index,
-  same-ride idempotence and released-ID tombstones protect concurrent/delayed calls.
-- Ride external IDs are String, ride IDs UUID. Assignment/release intent is durable;
-  optimistic locking and a recovery worker handle service failures/restarts.
-- Verification: 191 Maven tests passed (24 Account, 146 Driver, 21 Ride), zero failures,
-  errors or skips, with RIDELINK_MONGO_TESTS=true. Real three-service E2E passed 60
-  HTTP status checks plus ownership/concurrency/recovery assertions. Isolated test
-  databases were dropped. Newman passed 19 requests and 26 assertions.
-- Demo launcher uses ports 18081-18083 and separate local ridelink_demo_* databases.
-  See integration-tests/README.md and the authenticated RideLink-Integration collection.
+- Authorized whole-project work is on `integration`, sibling checkout
+  C:/Users/mashi/Desktop/RideLink-integration. Preserve the original student-ID branch.
+- All seven minimum backend workflows in the repository architecture report are now
+  implemented across four Java/Spring Boot services. service-support is a library.
+- Account/Driver/Ride use isolated Mongo databases. Fare uses PostgreSQL by default,
+  Flyway SQL migrations and a separate H2 SQL demo profile; no cross-service DB access.
+- Account JWT/ACTIVE status, role/ownership and internal service-token authentication
+  are implemented. Driver supports profile/vehicle/location/availability/search and
+  atomic ride-scoped reservation/release. Public search is read-only.
+- Ride supports nearest eligible-driver matching, strict state transitions, required
+  completion metrics, optimistic locking, durable release/payment intent and recovery.
+- Fare calculates rounded base/distance/duration/minimum amounts from trusted completed
+  Ride data; simulated payments are idempotent with SQL locking and immutable receipts.
+  Failed simulations can be retried with a new key; no actual banking is performed.
+- Verification: 204 Maven tests passed, zero failures/errors/skips, live Mongo enabled.
+  Four-JAR E2E passed 88 HTTP checks plus business/recovery assertions using Mongo/H2.
+  Newman passed 37 requests/51 assertions. SQL/PostgreSQL hosted CI is configured;
+  local PostgreSQL execution and hosted CI status have not been verified.
+- Demo launcher/start-stop supports ports 18081-18084, separate Mongo demo databases
+  and persistent H2 under tmp/local-integration. See integration-tests/README.md and
+  docs/requirements-status.md. Latest publication result is in the dated log below.
 
-## Next work (planned, not implemented)
+## Next work (external delivery / optional scale work)
 
-- Publish/review integration changes; exact push outcome is recorded in the latest log.
-- Fare calculation, payment and receipts remain outside this implemented integration.
-- Migrate legacy numeric external IDs deliberately before using old shared Ride data.
-- Production deployment: managed secrets, TLS and network restrictions. Larger-scale
-  search pagination/geospatial indexing and reservation tombstone archival remain.
-- Versioning remains /api/drivers and /api/v1/rides; clients use these actual routes.
+- Publish latest integration commit and check hosted CI; peer PR review/main merge
+  remains separate from local verification. Earlier integration 96f968d was published.
+- Verify PostgreSQL in the configured CI environment or with E2E_POSTGRES_DSN.
+- Owner must rotate any still-active cloud credentials formerly present in repository
+  history; current tracked examples were sanitized without recording their values.
+- Legacy data requires explicit identity mapping before migration; existing shared
+  data was not modified. Fresh demonstration data works with String external IDs.
+- Deployment TLS/network rules/credentials depend on the target environment; no live
+  deployment claimed. Pagination/geospatial indexing/tombstone archival are scale work.
 
 ## Dated work log
 
@@ -474,6 +477,68 @@ Shared repository setup is not a claim of individual contribution by the current
   fix branch failed because GitHub requires interactive username/sign-in. No remote
   update occurred. Run git push origin integration fix/ride-external-string-ids after
   signing in. This outcome is included by amending the local integration commit.
+
+### 2026-09-30 - Retry publishing verified integration
+
+- User requested pushing completed integration. Confirmed clean integration checkout
+  at 96f968d and inspected current branches/history before attempting publication.
+- Atomic push of integration, fix/ride-external-string-ids and the original student-ID
+  branch failed: GitHub username/sign-in requires interactive prompts unavailable to
+  this command. No remote update confirmed; no force push or application changes.
+- Remaining: run the same push from a user terminal and complete GitHub sign-in.
+  Application tests were not rerun because code is unchanged. This log is uncommitted.
+### 2026-09-30 - Confirm publication and save next-session handoff
+
+- User supplied GitHub screenshot showing all three branches pushed, then requested
+  pausing remaining work until the next session and saving the handoff in AGENTS.md.
+- Fresh git ls-remote confirmed integration at 96f968d, fix/ride-external-string-ids
+  at e71492d and feature/it24300246-driver-vehicle-service at ad3b3e2. Earlier push
+  authentication failure is resolved by the user's subsequent push. No merge into
+  main was performed in this session.
+- Completed: Account/Driver/Ride integration; prior verification remains 191 passing
+  Maven tests, 60 E2E HTTP checks and 19 Postman requests / 26 assertions. No tests
+  rerun for this documentation-only handoff. Application code is unchanged.
+- Next session: use RideLink-integration; check whether demo ports 18081-18083 are
+  running, start integration-tests/start-local.ps1 if needed, then import/run the
+  authenticated RideLink-Integration Postman collection in order (01-19).
+- Check the Fare/Payment teammate's latest branch/work before deciding remaining
+  integration scope. Fare/payment is not complete. PR/review/main merge is separate
+  future work, not implied by successful branch publication.
+- Updated both checkouts' work logs, preserving older entries. This documentation
+  update is local and uncommitted; no new commit or push performed.
+
+### 2026-09-30 - Finish documented four-service backend workflows
+
+- User explicitly authorized all remaining project work, including Fare/Payment,
+  according to the project document. Fresh fetch found Fare branch still at 7978efd:
+  README claimed implementation but source had only scaffolding. Used repository
+  architecture report/API documents; no original assessment PDF was available here.
+- Implemented fare estimation/finalization, JPA/Flyway SQL schema, idempotent simulated
+  payments, per-ride locking, failed attempts and immutable receipt snapshots. Public
+  endpoints enforce Account token/ownership; final amounts use Ride HTTP data, not
+  caller-supplied amounts. PostgreSQL default retained; explicit local H2 demo added.
+- Added Ride -> Driver nearest matching, no-driver handling, internal Ride lookup,
+  completion metrics validation and durable automatic payment/recovery with stable key.
+  Added Swagger bearer authorization and hid internal service-token endpoints.
+- Expanded scripts/collection/E2E to all four services. Launcher restores caller env
+  and fails early for exited processes. CI now builds shared modules, triggers on
+  integration, and provides Mongo/PostgreSQL for full workflow verification.
+- Reconciled runtime/API/architecture docs and added requirements-status.md. Replaced
+  embedded cloud credential examples in .env.example and Ride README with local URIs;
+  historical values are not removed from Git history and may require owner rotation.
+- Verification: root Maven verify with RIDELINK_MONGO_TESTS=true passed 204 tests,
+  zero failures/errors/skips. Added nine Fare formula/SQL/concurrency tests and four
+  Ride matching/payment tests. Local E2E passed 88 HTTP status checks plus assertions,
+  including ownership, no-match, illegal transitions, payment failure/retry, receipt
+  persistence, concurrent reservation, delayed release and payment/release recovery
+  after restarts. Temporary Mongo and H2 data removed; no shared database migrated.
+- Newman passed all 37 requests and 51 assertions. Four demo services left running
+  on 18081-18084 with retained demo data. Local verification used H2, not PostgreSQL;
+  hosted PostgreSQL CI execution and peer review remain external verification steps.
+- Git: committed implementation/docs on integration, preserving prior handoff entries.
+  Push failed because GitHub username/sign-in requires unavailable interactive prompts.
+  No remote update confirmed. Run git push origin integration from a signed-in terminal.
+  This outcome is recorded by amending the local implementation commit.
 
 ## Entry template
 

@@ -53,5 +53,9 @@ public record RideResponse(
         @Schema(description = "Timestamp of the last status/field update")
         Instant updatedAt,
         String pendingDriverId,
-        boolean releasePending
+        boolean releasePending,
+        boolean paymentPending,
+        UUID paymentId,
+        UUID receiptId,
+        String paymentStatus
 ) { }

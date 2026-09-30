@@ -18,10 +18,13 @@ import static org.assertj.core.api.Assertions.*;
 class ReservationWorkflowTest {
     RideRepository repo = mock(RideRepository.class);
     DriverGateway gateway = mock(DriverGateway.class);
+    PaymentGateway payment = mock(PaymentGateway.class);
     RideService service = new RideService(repo, new RideLifecycle(), new RideMapper());
     Ride ride = new Ride();
     @BeforeEach void setup() {
         service.setDriverGateway(gateway);
+        when(payment.process(any(),anyBoolean())).thenReturn(new PaymentGateway.Result(UUID.randomUUID(),UUID.randomUUID(),"SUCCESS"));
+        service.setPaymentGateway(payment);
         ride.setPassengerId("account-p"); ride.prepareForSave();
         when(repo.findById(ride.getId())).thenReturn(Optional.of(ride));
         when(repo.save(any())).thenAnswer(call -> call.getArgument(0));
@@ -51,7 +54,7 @@ class ReservationWorkflowTest {
     @Test void completionPersistsReleaseIntentAndRecoversAfterFailure() {
         ride.setDriverId("driver-a"); ride.setStatus(RideStatus.IN_PROGRESS);
         doThrow(new AccessFailure(503,"timeout")).doNothing().when(gateway).release("driver-a",ride.getId());
-        var completed = new UpdateRideStatusRequest(RideStatus.COMPLETED, null, null);
+        var completed = new UpdateRideStatusRequest(RideStatus.COMPLETED, java.math.BigDecimal.ONE, 1L);
         assertThatThrownBy(() -> service.updateStatus(ride.getId(),completed)).isInstanceOf(AccessFailure.class);
         assertThat(ride.getStatus()).isEqualTo(RideStatus.COMPLETED);
         assertThat(ride.isReleasePending()).isTrue();
@@ -68,5 +71,36 @@ class ReservationWorkflowTest {
         assertThatThrownBy(() -> service.updateStatus(ride.getId(),
                 new UpdateRideStatusRequest(RideStatus.ASSIGNED,null,null))).isInstanceOf(AccessFailure.class);
         verifyNoInteractions(gateway);
+    }
+    @Test void completionRequiresTrustedTripMetrics() {
+        ride.setDriverId("driver-a");ride.setStatus(RideStatus.IN_PROGRESS);
+        assertThatThrownBy(()->service.updateStatus(ride.getId(),new UpdateRideStatusRequest(RideStatus.COMPLETED,null,null)))
+                .isInstanceOf(AccessFailure.class);
+        assertThat(ride.getStatus()).isEqualTo(RideStatus.IN_PROGRESS);
+        verifyNoInteractions(payment);
+    }
+    @Test void paymentFailureRetainsDurableIntentAndRetriesSameRide() {
+        ride.setDriverId("driver-a");ride.setStatus(RideStatus.IN_PROGRESS);
+        when(payment.process(ride.getId(),false)).thenThrow(new AccessFailure(503,"offline"))
+                .thenReturn(new PaymentGateway.Result(UUID.randomUUID(),UUID.randomUUID(),"SUCCESS"));
+        var completed=new UpdateRideStatusRequest(RideStatus.COMPLETED,java.math.BigDecimal.ONE,1L);
+        assertThatThrownBy(()->service.updateStatus(ride.getId(),completed)).isInstanceOf(AccessFailure.class);
+        assertThat(ride.isPaymentPending()).isTrue();assertThat(ride.isReleasePending()).isFalse();
+        service.updateStatus(ride.getId(),completed);
+        assertThat(ride.isPaymentPending()).isFalse();assertThat(ride.getPaymentStatus()).isEqualTo("SUCCESS");
+        verify(payment,times(2)).process(ride.getId(),false);
+    }
+    @Test void matchingReturnsNoAvailableDriverWithoutAssignment() {
+        ride.setPickupLatitude(java.math.BigDecimal.ZERO);ride.setPickupLongitude(java.math.BigDecimal.ZERO);
+        when(gateway.eligible(any(),any(),any())).thenReturn(List.of());
+        assertThatThrownBy(()->service.matchDriver(ride.getId(),java.math.BigDecimal.ONE))
+                .isInstanceOf(AccessFailure.class).hasMessage("NO_AVAILABLE_DRIVER");
+        assertThat(ride.getStatus()).isEqualTo(RideStatus.REQUESTED);
+    }
+    @Test void matchingTriesNextCandidateAfterReservationConflict() {
+        ride.setPickupLatitude(java.math.BigDecimal.ZERO);ride.setPickupLongitude(java.math.BigDecimal.ZERO);
+        when(gateway.eligible(any(),any(),any())).thenReturn(List.of(new DriverGateway.Candidate("busy"),new DriverGateway.Candidate("free")));
+        doThrow(new AccessFailure(409,"busy")).when(gateway).reserve("busy",ride.getId());
+        assertThat(service.matchDriver(ride.getId(),java.math.BigDecimal.ONE).driverId()).isEqualTo("free");
     }
 }

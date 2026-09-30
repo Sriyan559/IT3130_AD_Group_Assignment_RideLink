@@ -1,12 +1,10 @@
-﻿# Fare & Payment Service API Specification
+# Fare & Payment runtime API
 
-**Owner:** Sanjeewa H.D.U.S (IT24101590)
-**Base URL:** http://localhost:8084
-**Swagger UI:** http://localhost:8084/swagger-ui/index.html
-**OpenAPI Spec:** http://localhost:8084/v3/api-docs
+The implemented canonical endpoints and request contracts are documented in
+[the service README](../../../fare-payment-service/README.md). Default port: 8084;
+local four-service demo: 18084. Swagger: `/swagger-ui/index.html`.
 
-### Planned Endpoints:
-- POST /api/v1/fare/estimate (Calculate Upfront Estimate)
-- POST /api/v1/payments/process (Record Simulated Payment & Final Fare)
-- GET /api/v1/payments/{paymentId} (Query Payment Status)
-- GET /api/v1/receipts/{receiptId} (Retrieve Immutable Receipt)
+Public estimate, final fare, payment and receipt APIs require an ACTIVE Account JWT.
+Payments and receipts belong to their passenger; ADMIN access is permitted.
+Internal completion processing uses a service token and trusted Ride data.
+See [four-service verification](../../../integration-tests/README.md) for a runnable demo.
