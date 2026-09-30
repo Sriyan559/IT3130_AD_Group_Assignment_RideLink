@@ -18,6 +18,13 @@ and vehicle, updates location, searches, assigns a ride, completes it and verifi
 release. Tokens and IDs are captured automatically. Use this collection for secured
 integration; the earlier synthetic-account Driver collection cannot authenticate real accounts.
 
+Run the whole collection with Postman's **Run collection** action (37 requests).
+Request 01 generates a distinct pickup near Colombo for each run; both ride scenarios
+use those coordinates and assert that matching selected this run's driver. This avoids
+equal-distance ties with drivers left AVAILABLE by an interrupted earlier demo.
+The current collection has 53 assertions. Keep the numbered order and refresh location
+before searching if manually paused for more than five minutes.
+
 Ports: 18081/18082/18083/18084. Separate local databases: `ridelink_demo_account`,
 `ridelink_demo_driver`, `ridelink_demo_ride`; Fare uses a separate persistent H2 SQL
 file under `tmp/local-integration/payment` for the local demo. Its default runtime

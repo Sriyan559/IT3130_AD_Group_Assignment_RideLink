@@ -60,7 +60,10 @@
               "const id = pm.variables.replaceIn(\"{{$guid}}\");",
               "pm.collectionVariables.set(\"runId\", id);",
               "pm.collectionVariables.set(\"testPassword\", pm.variables.replaceIn(\"{{$guid}}\"));",
-              "pm.collectionVariables.set(\"testPlate\", \"IT\" + id.replace(/-/g, \"\").slice(0, 16));"
+              "pm.collectionVariables.set(\"testPlate\", \"IT\" + id.replace(/-/g, \"\").slice(0, 16));",
+              "// Give this run a distinct pickup so older AVAILABLE demo drivers do not tie at 0 km.",
+              "pm.collectionVariables.set(\"demoLat\", (6.90 + parseInt(id.replace(/-/g, \"\").slice(0, 8), 16) / 0xffffffff * 0.05).toFixed(8));",
+              "pm.collectionVariables.set(\"demoLng\", (79.84 + parseInt(id.replace(/-/g, \"\").slice(8, 16), 16) / 0xffffffff * 0.05).toFixed(8));"
             ]
           }
         },
@@ -330,7 +333,7 @@
         "url": "{{driverUrl}}/api/drivers/{{driverId}}/location",
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"latitude\": 6.9271,\n  \"longitude\": 79.8612\n}",
+          "raw": "{\n  \"latitude\": {{demoLat}},\n  \"longitude\": {{demoLng}}\n}",
           "options": {
             "raw": {
               "language": "json"
@@ -365,7 +368,7 @@
       "request": {
         "method": "GET",
         "header": [],
-        "url": "{{driverUrl}}/api/drivers/eligible?lat=6.9271&lng=79.8612&radius=5",
+        "url": "{{driverUrl}}/api/drivers/eligible?lat={{demoLat}}&lng={{demoLng}}&radius=5",
         "auth": {
           "type": "bearer",
           "bearer": [
@@ -447,7 +450,7 @@
         "url": "{{rideUrl}}/api/v1/rides",
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"passengerId\": \"{{passengerId}}\",\n  \"pickupLatitude\": 6.9271,\n  \"pickupLongitude\": 79.8612,\n  \"pickupAddress\": \"Colombo\",\n  \"destinationLatitude\": 6.92,\n  \"destinationLongitude\": 79.86,\n  \"destinationAddress\": \"Destination\"\n}",
+          "raw": "{\n  \"passengerId\": \"{{passengerId}}\",\n  \"pickupLatitude\": {{demoLat}},\n  \"pickupLongitude\": {{demoLng}},\n  \"pickupAddress\": \"Colombo\",\n  \"destinationLatitude\": 6.92,\n  \"destinationLongitude\": 79.86,\n  \"destinationAddress\": \"Destination\"\n}",
           "options": {
             "raw": {
               "language": "json"
@@ -502,7 +505,8 @@
             "type": "text/javascript",
             "exec": [
               "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
-              "pm.test(\"Assigned\", () => pm.expect(pm.response.json().status).to.eql(\"ASSIGNED\"));"
+              "pm.test(\"Assigned\", () => pm.expect(pm.response.json().status).to.eql(\"ASSIGNED\"));",
+              "pm.test(\"Matched this run driver\", () => pm.expect(pm.response.json().driverId).to.eql(pm.collectionVariables.get(\"driverId\")));"
             ]
           }
         }
@@ -1067,7 +1071,7 @@
         },
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"latitude\": 6.9271,\n  \"longitude\": 79.8612\n}",
+          "raw": "{\n  \"latitude\": {{demoLat}},\n  \"longitude\": {{demoLng}}\n}",
           "options": {
             "raw": {
               "language": "json"
@@ -1100,7 +1104,7 @@
         "url": "{{rideUrl}}/api/v1/rides",
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"passengerId\": \"{{passengerId}}\",\n  \"pickupLatitude\": 6.9271,\n  \"pickupLongitude\": 79.8612,\n  \"pickupAddress\": \"Colombo\",\n  \"destinationLatitude\": 6.92,\n  \"destinationLongitude\": 79.86,\n  \"destinationAddress\": \"Destination\"\n}",
+          "raw": "{\n  \"passengerId\": \"{{passengerId}}\",\n  \"pickupLatitude\": {{demoLat}},\n  \"pickupLongitude\": {{demoLng}},\n  \"pickupAddress\": \"Colombo\",\n  \"destinationLatitude\": 6.92,\n  \"destinationLongitude\": 79.86,\n  \"destinationAddress\": \"Destination\"\n}",
           "options": {
             "raw": {
               "language": "json"
@@ -1154,7 +1158,8 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Matched this run driver\", () => pm.expect(pm.response.json().driverId).to.eql(pm.collectionVariables.get(\"driverId\")));"
             ]
           }
         }

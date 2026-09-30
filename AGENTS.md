@@ -40,12 +40,14 @@ without relying on chat memory. This file applies throughout this repository.
 - Keep changes focused on the requested component and preserve unrelated user changes.
 - Use meaningful commits for completed increments. Do not fabricate activity for history.
 
-## Current state (last checked 2026-09-30)
+## Current state (last checked 2026-10-01)
 
 - Authorized whole-project work is on `integration`, sibling checkout
   C:/Users/mashi/Desktop/RideLink-integration. Preserve the original student-ID branch.
 - Delivered to `main` through PR #1, merge 1605e3e on 2026-09-30. All five PR CI
   jobs passed (run 36754310117), including PostgreSQL/MongoDB full-system E2E.
+- Main commit 7a3237d also passed hosted CI run 36754806785. October 1 demo rehearsal
+  improved collection repeatability; two consecutive runs passed 37 requests/53 assertions.
 - All seven minimum backend workflows in the repository architecture report are now
   implemented across four Java/Spring Boot services. service-support is a library.
 - Account/Driver/Ride use isolated Mongo databases. Fare uses PostgreSQL by default,
@@ -588,6 +590,24 @@ Shared repository setup is not a claim of individual contribution by the current
 - Assignment backend delivery is complete. Production deployment, shared legacy-data
   migration and rotation of any historical live cloud credentials remain owner-specific
   operations, not prerequisites for the isolated assignment demo.
+
+### 2026-10-01 - Rehearse repeatable final demo
+
+- Verified remote main at 7a3237d and successful main CI run 36754806785. Four local
+  service ports remain listening. No Java implementation changes were needed.
+- An initial npm-based rehearsal was interrupted during startup/request execution;
+  its synthetic driver remained AVAILABLE. The next run exposed equal-distance
+  matching to that older driver, causing expected ownership rejection downstream.
+- Changed the integration collection to derive distinct nearby pickup coordinates
+  from its run UUID, use them consistently for driver location and ride pickup, and
+  assert the matched driver ID in both scenarios. This preserves automatic matching
+  while preventing previous demo records at the fixed pickup from winning a tie.
+- Verification: cached Newman completed two consecutive runs with all 37 requests
+  and 53 assertions passing each, zero failures. Updated the demo guide; whitespace
+  checks passed. Java suites were not rerun for this collection-only change.
+- Synthetic rehearsal data is retained in demo databases. Full Newman reports are
+  ignored local files under tmp/local-integration and may contain demo tokens;
+  they are not published. Changes prepared for normal commit/push to main/integration.
 
 ## Entry template
 
