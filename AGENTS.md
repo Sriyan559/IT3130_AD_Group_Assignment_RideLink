@@ -58,17 +58,16 @@ without relying on chat memory. This file applies throughout this repository.
   Failed simulations can be retried with a new key; no actual banking is performed.
 - Verification: 204 Maven tests passed, zero failures/errors/skips, live Mongo enabled.
   Four-JAR E2E passed 88 HTTP checks plus business/recovery assertions using Mongo/H2.
-  Newman passed 37 requests/51 assertions. SQL/PostgreSQL hosted CI is configured;
-  local PostgreSQL execution and hosted CI status have not been verified.
+  Newman passed 37 requests/51 assertions. Hosted CI run 36655685604 passed all five
+  jobs for published commit 88f3fbd, including PostgreSQL 16/MongoDB 8.0 E2E.
 - Demo launcher/start-stop supports ports 18081-18084, separate Mongo demo databases
   and persistent H2 under tmp/local-integration. See integration-tests/README.md and
   docs/requirements-status.md. Latest publication result is in the dated log below.
 
 ## Next work (external delivery / optional scale work)
 
-- Publish latest integration commit and check hosted CI; peer PR review/main merge
-  remains separate from local verification. Earlier integration 96f968d was published.
-- Verify PostgreSQL in the configured CI environment or with E2E_POSTGRES_DSN.
+- Integration 88f3fbd is published and hosted CI passed. PR/main merge remains;
+  agent GitHub authentication is unavailable, despite public read access working.
 - Owner must rotate any still-active cloud credentials formerly present in repository
   history; current tracked examples were sanitized without recording their values.
 - Legacy data requires explicit identity mapping before migration; existing shared
@@ -539,6 +538,22 @@ Shared repository setup is not a claim of individual contribution by the current
   Push failed because GitHub username/sign-in requires unavailable interactive prompts.
   No remote update confirmed. Run git push origin integration from a signed-in terminal.
   This outcome is recorded by amending the local implementation commit.
+
+### 2026-09-30 - Verify published four-service implementation and PostgreSQL CI
+
+- Fresh remote inspection confirmed integration at 88f3fbd and main at f04a7c6.
+  The earlier push blockage was resolved outside the agent's failed push attempt.
+- GitHub Actions API confirmed run 36655685604 completed successfully for 88f3fbd:
+  all four component jobs and full-system aggregation passed. The latter runs the
+  real four-service E2E with PostgreSQL 16 and MongoDB 8.0, resolving the previous
+  PostgreSQL verification gap. Updated requirements-status.md and current state.
+- No open PR was returned. Git credential helper has no usable GitHub credential;
+  browser automation inventory was empty and Chrome unavailable. Requested user
+  sign-in so the already-authorized PR/merge can proceed. No merge performed.
+- Verification: remote hash and hosted job/step results; application code unchanged,
+  so local suites were not rerun. Documentation whitespace checks passed. Committed
+  this evidence update locally; publication awaits GitHub sign-in. PR text is prepared
+  in ignored tmp/local-integration/pr-body.txt. No peer approval or main merge is claimed.
 
 ## Entry template
 

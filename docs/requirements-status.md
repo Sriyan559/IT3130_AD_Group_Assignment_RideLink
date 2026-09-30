@@ -35,8 +35,9 @@ are superseded by their implemented Mongo repositories.
 
 - Run `integration-tests/start-local.ps1 -Build`, then import
   `postman/collections/RideLink-Integration.postman_collection.json` and run all 37 requests.
-- PostgreSQL/Flyway configuration and PostgreSQL CI E2E are provided. PostgreSQL was
-  unavailable locally; H2 passing does not establish a PostgreSQL or hosted CI pass.
+- Hosted CI for commit `88f3fbd` passed all five jobs on 2026-09-30, including the
+  full-system workflow with PostgreSQL 16 and MongoDB 8.0. This verifies PostgreSQL
+  separately from the local H2 demo. [Verified run](https://github.com/Sriyan559/IT3130_AD_Group_Assignment_RideLink/actions/runs/36655685604).
 - Local commits/push attempts and exact remote results are recorded in AGENTS.md.
   Peer PR review/main merge cannot be claimed merely because code is pushed.
 - No shared legacy data was migrated. External numeric IDs require owner-provided
