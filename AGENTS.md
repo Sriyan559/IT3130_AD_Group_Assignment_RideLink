@@ -91,15 +91,18 @@ without relying on chat memory. This file applies throughout this repository.
   [location](driver-vehicle-service/docs/driver-location.md),
   [eligible drivers](driver-vehicle-service/docs/eligible-drivers.md).
 
-## Next work (planned, not implemented)
+## Next work (delivery / environment verification)
 
-- Publish integration commit 96f968d and fix/ride-external-string-ids after GitHub
-  sign-in; automated push failed. The fix is already merged into local integration.
-- Run the authenticated collection from the integration checkout. Its guide is
-  integration-tests/README.md there; demo ports are 18081-18083. The old Driver-only
-  collection remains usable with the old local 8082 demo, not the secured services.
-- Fare/payment implementation, legacy-data migration and production deployment remain.
-  Do not describe the entire four-service platform as finished.
+- Latest full backend implementation is commit 88f3fbd on `integration` in sibling
+  C:/Users/mashi/Desktop/RideLink-integration. User explicitly authorized Fare/Payment
+  completion. Use that checkout for all four services and the 37-request collection.
+- Implementation is now delivered to main via PR #1 (merge 1605e3e). Latest verified
+  main/integration commit 81ccb2a passed CI run 36759345753, including PostgreSQL E2E.
+  GitHub write access works with explicit Dinuli2004 account selection.
+- Verification: 204 Maven tests, 88 E2E HTTP checks; updated repeatable collection
+  passes 37 requests/53 assertions. Evidence and current guides are in integration.
+- Fresh demo uses isolated Mongo + H2 SQL. Legacy data migration, production TLS/secrets
+  and rotation of any previously committed active cloud credentials require owner context.
 
 ## Dated work log
 
@@ -493,6 +496,54 @@ Shared repository setup is not a claim of individual contribution by the current
   shared legacy-data migration are unfinished; this is three-service completion.
 - Git: this navigation/work-log update is local, prepared for commit on the original
   student-ID branch. No application code changed in this checkout.
+
+### 2026-09-30 - Confirm publication and save next-session handoff
+
+- User supplied GitHub screenshot showing all three branches pushed, then requested
+  pausing remaining work until the next session and saving the handoff in AGENTS.md.
+- Fresh git ls-remote confirmed integration at 96f968d, fix/ride-external-string-ids
+  at e71492d and feature/it24300246-driver-vehicle-service at ad3b3e2. Earlier push
+  authentication failure is resolved by the user's subsequent push. No merge into
+  main was performed in this session.
+- Completed: Account/Driver/Ride integration; prior verification remains 191 passing
+  Maven tests, 60 E2E HTTP checks and 19 Postman requests / 26 assertions. No tests
+  rerun for this documentation-only handoff. Application code is unchanged.
+- Next session: use RideLink-integration; check whether demo ports 18081-18083 are
+  running, start integration-tests/start-local.ps1 if needed, then import/run the
+  authenticated RideLink-Integration Postman collection in order (01-19).
+- Check the Fare/Payment teammate's latest branch/work before deciding remaining
+  integration scope. Fare/payment is not complete. PR/review/main merge is separate
+  future work, not implied by successful branch publication.
+- Updated both checkouts' work logs, preserving older entries. This documentation
+  update is local and uncommitted; no new commit or push performed.
+
+### 2026-09-30 - Four-service completion handoff
+
+- User explicitly requested finishing all remaining documented backend workflows,
+  including Fare/Payment. Completed and committed 88f3fbd in RideLink-integration.
+  This original student-ID checkout remains component-focused; use the sibling for demo.
+- Added fare calculations, SQL/Flyway persistence, payment idempotency/concurrency,
+  failed simulation/retry, immutable receipts, automatic Ride matching/payment and
+  durable recovery. Updated collection/launcher/CI/requirements documentation.
+- Verified 204 Maven tests, 88 E2E HTTP checks with recovery assertions, and 37 Postman
+  requests/51 assertions. All passed. Local SQL tests used H2; PostgreSQL CI configured
+  but not run locally. Four demo services left on ports 18081-18084.
+- Push failed on GitHub interactive authentication. No remote 88f3fbd confirmed.
+  Current integration worktree is clean; its work log is included in that commit.
+- Preserved original checkout's pending handoff changes and updated this pointer.
+  This original-checkout AGENTS.md change remains local/uncommitted. No tests rerun
+  here because only documentation changed; no application files altered here.
+
+### 2026-10-01 - Publish remaining component handoff logs
+
+- Reconciled the pending September 30 handoff entries with actual main delivery:
+  PR #1 merged as 1605e3e; remote main/integration at 81ccb2a and hosted CI run
+  36759345753 passed. Later CI/evidence work is maintained in RideLink-integration.
+- User requested all remaining work committed/pushed, including AGENTS.md. Preserved
+  previous entries and updated next-work pointers; no component code changed.
+- Latest Newman run passed 37 requests/53 assertions. Application tests not rerun
+  for this documentation-only update; whitespace checked before commit. This log
+  is committed/pushed on the original student-ID branch, which remains preserved.
 
 ## Entry template
 
