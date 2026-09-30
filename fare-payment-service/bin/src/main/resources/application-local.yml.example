@@ -1,0 +1,15 @@
+# Example Local Development Override Configuration for Fare & Payment Service
+# Copy to application-local.yml (which is ignored by Git) for local testing
+
+server:
+  port: 8084
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/payment_db
+    username: postgres
+    password: local_dev_password
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true

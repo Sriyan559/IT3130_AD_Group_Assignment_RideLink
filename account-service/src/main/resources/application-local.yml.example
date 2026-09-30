@@ -1,0 +1,17 @@
+# Example Local Development Override Configuration for Account Service
+# Copy to application-local.yml (which is ignored by Git) for local testing
+
+server:
+  port: 8081
+
+spring:
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}
+      database: ${MONGODB_DATABASE:ridelink_account_db}
+      auto-index-creation: true
+
+security:
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration-ms: ${JWT_EXPIRATION_MS:3600000}

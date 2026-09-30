@@ -1,0 +1,25 @@
+server:
+  port: ${ACCOUNT_SERVICE_PORT:8081}
+
+spring:
+  application:
+    name: account-service
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/account_db}
+      database: ${MONGODB_DATABASE:ridelink_account_db}
+      auto-index-creation: true
+
+# Springdoc OpenAPI Configuration
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+
+# Security & JWT Configuration Placeholders
+security:
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration-ms: ${JWT_EXPIRATION_MS:3600000}

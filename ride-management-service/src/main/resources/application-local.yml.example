@@ -1,0 +1,18 @@
+# Example Local Development Override Configuration for Ride Management Service
+# Copy to application-local.yml (which is ignored by Git) for local testing
+
+server:
+  port: 8083
+
+spring:
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/ride_db
+
+services:
+  account:
+    url: http://localhost:8081
+  driver:
+    url: http://localhost:8082
+  payment:
+    url: http://localhost:8084

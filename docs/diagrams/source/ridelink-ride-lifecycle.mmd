@@ -1,0 +1,12 @@
+%% RideLink Ride State Machine Lifecycle (Mermaid)
+stateDiagram-v2
+    [*] --> REQUESTED: Passenger requests ride
+    REQUESTED --> ASSIGNED: Available driver found & assigned
+    REQUESTED --> CANCELLED: Passenger cancels before assignment
+    ASSIGNED --> ACCEPTED: Driver accepts assignment
+    ASSIGNED --> CANCELLED: Passenger cancels or timeout
+    ACCEPTED --> IN_PROGRESS: Driver arrives & starts trip
+    ACCEPTED --> CANCELLED: Driver or Passenger cancels before start
+    IN_PROGRESS --> COMPLETED: Destination reached & trip concluded
+    COMPLETED --> [*]: Payment calculated & receipt issued
+    CANCELLED --> [*]: Termination

@@ -1,0 +1,3 @@
+$kind: collection
+description: Endpoints owned by Driver & Vehicle Service (Port 8082). Handles vehicle details, availability status, and simulated GPS location.
+order: 2000

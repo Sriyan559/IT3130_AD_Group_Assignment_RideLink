@@ -1,0 +1,117 @@
+{
+  "info": {
+    "name": "RideLink Account Service - Verified QA",
+    "description": "Verified against the Account Service on 2026-09-29. Run folders in order. No database credentials, JWT secrets, or permanent tokens are stored.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "passenger_password", "value": "Passenger@123", "type": "string" },
+    { "key": "driver_password", "value": "Driver@123", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "01 - Health / Swagger",
+      "item": [
+        { "name": "Swagger UI", "request": { "method": "GET", "url": "{{account_service_url}}/swagger-ui/index.html" }, "event": [{ "listen": "test", "script": { "exec": ["pm.test('Swagger UI returns 200', () => pm.response.to.have.status(200));"] } }] },
+        { "name": "OpenAPI JSON", "request": { "method": "GET", "url": "{{account_service_url}}/v3/api-docs" }, "event": [{ "listen": "test", "script": { "exec": ["pm.test('OpenAPI returns 200', () => pm.response.to.have.status(200));", "pm.test('OpenAPI document is JSON', () => pm.expect(pm.response.json().openapi).to.exist);"] } }] }
+      ]
+    },
+    {
+      "name": "02 - Passenger Registration",
+      "item": [
+        {
+          "name": "Register Passenger",
+          "event": [
+            { "listen": "prerequest", "script": { "exec": ["pm.environment.set('passenger_email', `qa.passenger+${Date.now()}@example.com`);"] } },
+            { "listen": "test", "script": { "exec": ["pm.test('201 Created', () => pm.response.to.have.status(201));", "const b=pm.response.json(); pm.expect(b.id).to.exist; pm.expect(b.role).to.eql('PASSENGER'); pm.expect(b.status).to.eql('ACTIVE'); pm.expect(b).not.to.have.property('password'); pm.expect(b).not.to.have.property('passwordHash'); pm.environment.set('passenger_id', b.id);"] } }
+          ],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"fullName\": \"Test Passenger\",\n  \"email\": \"{{passenger_email}}\",\n  \"password\": \"{{passenger_password}}\",\n  \"phone\": \"0712345678\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{account_service_url}}/api/auth/register/passenger" }
+        },
+        {
+          "name": "Duplicate Passenger Email",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('409 Conflict', () => pm.response.to.have.status(409));", "pm.expect(pm.response.json().error).to.eql('DUPLICATE_EMAIL');"] } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"fullName\":\"Duplicate Passenger\",\"email\":\"{{passenger_email}}\",\"password\":\"{{passenger_password}}\",\"phone\":\"0712345678\"}" }, "url": "{{account_service_url}}/api/auth/register/passenger" }
+        }
+      ]
+    },
+    {
+      "name": "03 - Driver Registration",
+      "item": [
+        {
+          "name": "Register Driver",
+          "event": [
+            { "listen": "prerequest", "script": { "exec": ["pm.environment.set('driver_email', `qa.driver+${Date.now()}@example.com`);"] } },
+            { "listen": "test", "script": { "exec": ["pm.test('201 Created', () => pm.response.to.have.status(201));", "const b=pm.response.json(); pm.expect(b.id).to.exist; pm.expect(b.role).to.eql('DRIVER'); pm.expect(b.status).to.eql('ACTIVE'); pm.expect(b).not.to.have.property('passwordHash'); pm.environment.set('driver_id', b.id);"] } }
+          ],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"fullName\": \"Test Driver\",\n  \"email\": \"{{driver_email}}\",\n  \"password\": \"{{driver_password}}\",\n  \"phone\": \"0771234567\"\n}" }, "url": "{{account_service_url}}/api/auth/register/driver" }
+        },
+        {
+          "name": "Duplicate Driver Email",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('409 Conflict', () => pm.response.to.have.status(409));"] } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"fullName\":\"Duplicate Driver\",\"email\":\"{{driver_email}}\",\"password\":\"{{driver_password}}\",\"phone\":\"0771234567\"}" }, "url": "{{account_service_url}}/api/auth/register/driver" }
+        }
+      ]
+    },
+    {
+      "name": "04 - Login",
+      "item": [
+        {
+          "name": "Passenger Login",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Login succeeds', () => pm.response.to.have.status(200));", "const b=pm.response.json(); pm.expect(b.token).to.be.a('string').and.not.empty; pm.expect(b.account.role).to.eql('PASSENGER'); pm.expect(b.account).not.to.have.property('passwordHash'); pm.environment.set('token', b.token);"] } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"email\":\"{{passenger_email}}\",\"password\":\"{{passenger_password}}\"}" }, "url": "{{account_service_url}}/api/auth/login" }
+        },
+        {
+          "name": "Driver Login",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Login succeeds', () => pm.response.to.have.status(200));", "const b=pm.response.json(); pm.expect(b.account.role).to.eql('DRIVER'); pm.environment.set('driver_token', b.token);"] } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"email\":\"{{driver_email}}\",\"password\":\"{{driver_password}}\"}" }, "url": "{{account_service_url}}/api/auth/login" }
+        },
+        {
+          "name": "Wrong Password",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('401 without token', () => { pm.response.to.have.status(401); pm.expect(pm.response.json()).not.to.have.property('token'); });"] } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"email\":\"{{passenger_email}}\",\"password\":\"WrongPassword@123\"}" }, "url": "{{account_service_url}}/api/auth/login" }
+        }
+      ]
+    },
+    {
+      "name": "05 - Account Profile",
+      "item": [
+        { "name": "Get Own Profile", "event": [{ "listen": "test", "script": { "exec": ["pm.test('Profile returned safely', () => { pm.response.to.have.status(200); const b=pm.response.json(); pm.expect(b.id).to.eql(pm.environment.get('passenger_id')); pm.expect(b).not.to.have.property('passwordHash'); });"] } }], "request": { "method": "GET", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] }, "url": "{{account_service_url}}/api/accounts/{{passenger_id}}" } },
+        { "name": "Update Own Profile", "event": [{ "listen": "test", "script": { "exec": ["pm.test('Profile updated', () => { pm.response.to.have.status(200); const b=pm.response.json(); pm.expect(b.fullName).to.eql('Updated Passenger'); pm.expect(b.role).to.eql('PASSENGER'); });"] } }], "request": { "method": "PUT", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] }, "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"fullName\":\"Updated Passenger\",\"phone\":\"0777654321\"}" }, "url": "{{account_service_url}}/api/accounts/{{passenger_id}}" } },
+        { "name": "Passenger Reads Driver Profile - Forbidden", "event": [{ "listen": "test", "script": { "exec": ["pm.test('Owner isolation enforced', () => pm.response.to.have.status(403));"] } }], "request": { "method": "GET", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] }, "url": "{{account_service_url}}/api/accounts/{{driver_id}}" } }
+      ]
+    },
+    {
+      "name": "06 - Account Status",
+      "item": [
+        { "name": "Admin Change Status - Requires Legitimate Admin Token", "description": "BLOCKED in QA: no legitimate admin bootstrap mechanism exists. Supply an authorized admin_token only when provisioned operationally.", "request": { "method": "PATCH", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{admin_token}}", "type": "string" }] }, "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"status\":\"SUSPENDED\"}" }, "url": "{{account_service_url}}/api/accounts/{{passenger_id}}/status" } }
+      ]
+    },
+    {
+      "name": "07 - Authentication Negative Tests",
+      "item": [
+        { "name": "Profile Without JWT", "event": [{ "listen": "test", "script": { "exec": ["pm.test('401 Unauthorized', () => pm.response.to.have.status(401));"] } }], "request": { "method": "GET", "url": "{{account_service_url}}/api/accounts/{{passenger_id}}" } },
+        { "name": "Profile With Invalid JWT", "event": [{ "listen": "test", "script": { "exec": ["pm.test('401 Unauthorized', () => pm.response.to.have.status(401));"] } }], "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer invalid-token" }], "url": "{{account_service_url}}/api/accounts/{{passenger_id}}" } }
+      ]
+    },
+    {
+      "name": "08 - Authorization / RBAC",
+      "item": [
+        { "name": "Passenger Cannot Change Status", "event": [{ "listen": "test", "script": { "exec": ["pm.test('403 Forbidden', () => pm.response.to.have.status(403));"] } }], "request": { "method": "PATCH", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] }, "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"status\":\"SUSPENDED\"}" }, "url": "{{account_service_url}}/api/accounts/{{passenger_id}}/status" } },
+        { "name": "Driver Cannot Change Status", "event": [{ "listen": "test", "script": { "exec": ["pm.test('403 Forbidden', () => pm.response.to.have.status(403));"] } }], "request": { "method": "PATCH", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{driver_token}}", "type": "string" }] }, "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"status\":\"SUSPENDED\"}" }, "url": "{{account_service_url}}/api/accounts/{{driver_id}}/status" } }
+      ]
+    },
+    {
+      "name": "09 - Validation Tests",
+      "item": [
+        { "name": "Invalid Registration Fields", "event": [{ "listen": "test", "script": { "exec": ["pm.test('400 validation error', () => pm.response.to.have.status(400));", "const b=pm.response.json(); pm.expect(b.error).to.eql('VALIDATION_ERROR'); pm.expect(b.fieldErrors).to.be.an('object');"] } }], "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"fullName\":\"\",\"email\":\"not-email\",\"password\":\"short\",\"phone\":\"bad\"}" }, "url": "{{account_service_url}}/api/auth/register/passenger" } },
+        { "name": "Malformed JSON", "event": [{ "listen": "test", "script": { "exec": ["pm.test('400 malformed request', () => pm.response.to.have.status(400));", "pm.expect(pm.response.json().error).to.eql('MALFORMED_REQUEST');"] } }], "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{bad json" }, "url": "{{account_service_url}}/api/auth/register/passenger" } }
+      ]
+    },
+    {
+      "name": "10 - Security Checks",
+      "item": [
+        { "name": "Restricted Field Update Attack", "event": [{ "listen": "test", "script": { "exec": ["pm.test('Privilege escalation blocked', () => { pm.response.to.have.status(200); const b=pm.response.json(); pm.expect(b.role).to.eql('PASSENGER'); pm.expect(b.status).to.eql('ACTIVE'); pm.expect(b).not.to.have.property('passwordHash'); });"] } }], "request": { "method": "PUT", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] }, "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"fullName\":\"Security Check\",\"phone\":\"0777654321\",\"role\":\"ADMIN\",\"status\":\"DISABLED\",\"passwordHash\":\"attack\"}" }, "url": "{{account_service_url}}/api/accounts/{{passenger_id}}" } }
+      ]
+    }
+  ]
+}

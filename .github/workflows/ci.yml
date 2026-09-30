@@ -1,0 +1,97 @@
+name: RideLink Microservices CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop, integration ]
+  pull_request:
+    branches: [ main, develop, integration ]
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Build & Verify Microservices
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        service:
+          - account-service
+          - driver-vehicle-service
+          - ride-management-service
+          - fare-payment-service
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build and Test ${{ matrix.service }}
+        run: |
+          echo "Building and running tests for ${{ matrix.service }}..."
+          mvn -B -pl ${{ matrix.service }} -am verify
+
+  full-system-verify:
+    name: Full System Aggregation Check
+    needs: build-and-test
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ridelink_ci
+          POSTGRES_PASSWORD: ridelink_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ridelink_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+      mongo:
+        image: mongo:8.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.adminCommand({ping:1})'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      RIDELINK_MONGO_TESTS: 'true'
+      # Disposable CI-only database credentials, not a deployed account.
+      E2E_POSTGRES_DSN: postgresql://ridelink_ci:ridelink_ci@localhost:5432/postgres
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Verify Multi-Module Aggregator
+        run: |
+          mvn -B verify
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Verify authenticated Account Driver Ride workflow
+        run: |
+          python -m pip install -r integration-tests/requirements.txt
+          python integration-tests/run-local-e2e.py

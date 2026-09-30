@@ -1,0 +1,3 @@
+$kind: collection
+description: Endpoints owned by Fare & Payment Service (Port 8084). Handles upfront fare estimates, final calculations, payments, and receipts.
+order: 4000

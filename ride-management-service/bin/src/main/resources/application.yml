@@ -1,0 +1,36 @@
+server:
+  port: ${RIDE_SERVICE_PORT:8083}
+
+spring:
+  application:
+    name: ride-management-service
+  datasource:
+    url: jdbc:postgresql://${RIDE_DB_HOST:localhost}:${RIDE_DB_PORT:5432}/${RIDE_DB_NAME:ride_db}
+    username: ${RIDE_DB_USERNAME:ride_user}
+    password: ${RIDE_DB_PASSWORD:ride_password}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+# Springdoc OpenAPI Configuration
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+
+# Interservice Communication Downstream Endpoints
+services:
+  account:
+    url: ${ACCOUNT_SERVICE_URL:http://localhost:8081}
+  driver:
+    url: ${DRIVER_SERVICE_URL:http://localhost:8082}
+  payment:
+    url: ${PAYMENT_SERVICE_URL:http://localhost:8084}

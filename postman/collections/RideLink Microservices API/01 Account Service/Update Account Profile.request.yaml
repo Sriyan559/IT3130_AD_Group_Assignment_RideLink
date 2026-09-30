@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{account_service_url}}/api/accounts/{{passenger_id}}"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "fullName": "Updated Passenger",
+      "phone": "+94770000000"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{token}}"
+order: 5000
