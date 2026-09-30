@@ -38,8 +38,9 @@ are superseded by their implemented Mongo repositories.
 - Hosted CI for commit `88f3fbd` passed all five jobs on 2026-09-30, including the
   full-system workflow with PostgreSQL 16 and MongoDB 8.0. This verifies PostgreSQL
   separately from the local H2 demo. [Verified run](https://github.com/Sriyan559/IT3130_AD_Group_Assignment_RideLink/actions/runs/36655685604).
-- Local commits/push attempts and exact remote results are recorded in AGENTS.md.
-  Peer PR review/main merge cannot be claimed merely because code is pushed.
+- Delivered to `main` through [PR #1](https://github.com/Sriyan559/IT3130_AD_Group_Assignment_RideLink/pull/1),
+  merge `1605e3e`, after all five [PR CI jobs](https://github.com/Sriyan559/IT3130_AD_Group_Assignment_RideLink/actions/runs/36754310117)
+  passed. Git history is preserved. Independent peer approval is not claimed.
 - No shared legacy data was migrated. External numeric IDs require owner-provided
   identity mapping before migration; the demo creates new valid String references.
 - Production TLS/network policy and deployment credentials depend on the hosting

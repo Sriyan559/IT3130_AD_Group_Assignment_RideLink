@@ -44,6 +44,8 @@ without relying on chat memory. This file applies throughout this repository.
 
 - Authorized whole-project work is on `integration`, sibling checkout
   C:/Users/mashi/Desktop/RideLink-integration. Preserve the original student-ID branch.
+- Delivered to `main` through PR #1, merge 1605e3e on 2026-09-30. All five PR CI
+  jobs passed (run 36754310117), including PostgreSQL/MongoDB full-system E2E.
 - All seven minimum backend workflows in the repository architecture report are now
   implemented across four Java/Spring Boot services. service-support is a library.
 - Account/Driver/Ride use isolated Mongo databases. Fare uses PostgreSQL by default,
@@ -66,8 +68,8 @@ without relying on chat memory. This file applies throughout this repository.
 
 ## Next work (external delivery / optional scale work)
 
-- Integration implementation is published and hosted CI passed. GitHub write access
-  works using the authorized Dinuli2004 account; PR/main delivery is in progress.
+- Backend implementation, publication and main merge are complete. GitHub write
+  access works with explicit account selection (Dinuli2004); no permission changes.
 - Owner must rotate any still-active cloud credentials formerly present in repository
   history; current tracked examples were sanitized without recording their values.
 - Legacy data requires explicit identity mapping before migration; existing shared
@@ -555,8 +557,6 @@ Shared repository setup is not a claim of individual contribution by the current
   this evidence update locally; publication awaits GitHub sign-in. PR text is prepared
   in ignored tmp/local-integration/pr-body.txt. No peer approval or main merge is claimed.
 
-## Entry template
-
 ### 2026-09-30 - Resolve GitHub account selection and prepare main integration
 
 - Git Credential Manager had two accounts; unqualified lookup failed. Explicit account
@@ -572,6 +572,24 @@ Shared repository setup is not a claim of individual contribution by the current
   that branch is not claimed as merged or as this user's individual contribution.
 - Verification: remote access and diff inspection; local application suites not rerun
   for README/history-only changes. PR and resulting hosted checks are next.
+
+### 2026-09-30 - Deliver verified backend to main
+
+- Created PR #1 and waited for all five checks in run 36754310117 to pass on exact
+  head 5631d67. Full-system verification used PostgreSQL 16 and MongoDB 8.0.
+- Merged PR #1 using GitHub's merge API with the tested head SHA guard. GitHub
+  confirmed merge 1605e3e; fresh fetch confirmed main and local integration was
+  fast-forwarded to it. Existing component branches were retained. No independent
+  peer approval is claimed; delivery was authorized by the user.
+- Local demo services remain listening on 18081-18084. Prior local verification:
+  204 Maven tests, 88 E2E HTTP checks plus assertions, 37 Newman requests/51 assertions.
+- Updated delivery documentation; no application changes since the passing CI.
+  Final documentation is committed/published with normal fast-forward pushes.
+- Assignment backend delivery is complete. Production deployment, shared legacy-data
+  migration and rotation of any historical live cloud credentials remain owner-specific
+  operations, not prerequisites for the isolated assignment demo.
+
+## Entry template
 
 ```markdown
 ### YYYY-MM-DD - Short task title
