@@ -1,4 +1,5 @@
 package com.ridelink.payment.controller;
+
 import com.ridelink.payment.dto.request.ProcessPaymentRequest;
 import com.ridelink.payment.entity.*;
 import com.ridelink.payment.fare.FareCalculator;
@@ -12,6 +13,7 @@ import java.math.BigDecimal;
 import java.util.*;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.web.bind.annotation.*;
+import static java.util.Objects.requireNonNull;
 
 @RestController
 public class PaymentController {
@@ -39,14 +41,14 @@ public class PaymentController {
         try { return finalizer.ensure(trip); }
         catch(DataIntegrityViolationException ex) {
             // The competing transaction may have inserted this immutable fare first.
-            return fares.findById(id).orElseThrow(()->new AccessFailure(409,"Concurrent fare creation; retry same ride"));
+            return fares.findById(requireNonNull(id)).orElseThrow(()->new AccessFailure(409,"Concurrent fare creation; retry same ride"));
         }
     }
     @PostMapping({"/api/v1/fare/final","/api/fares/final"})
     public FinalFare finalizeFare(@Valid @RequestBody FinalRequest request) { return ensure(request.rideId(),false); }
     @GetMapping({"/api/v1/fare/final/{rideId}","/api/fares/final/{rideId}"})
     public FinalFare getFare(@PathVariable UUID rideId) {
-        var result=fares.findById(rideId).orElseThrow(()->new AccessFailure(404,"Final fare not found"));owner(result.passengerId);return result;
+        var result=fares.findById(requireNonNull(rideId)).orElseThrow(()->new AccessFailure(404,"Final fare not found"));owner(result.passengerId);return result;
     }
     @PostMapping({"/api/v1/payments/process","/api/payments"})
     public PaymentAttempt process(@Valid @RequestBody ProcessPaymentRequest request) {
@@ -60,13 +62,13 @@ public class PaymentController {
     @io.swagger.v3.oas.annotations.Hidden
     @GetMapping("/internal/payments/ride/{rideId}/successful")
     public PaymentAttempt successful(@PathVariable UUID rideId) {
-        FinalFare fare=fares.findById(rideId).orElseThrow(()->new AccessFailure(404,"Fare not found"));
+        FinalFare fare=fares.findById(requireNonNull(rideId)).orElseThrow(()->new AccessFailure(404,"Fare not found"));
         if(fare.paidPaymentId==null) throw new AccessFailure(404,"Successful payment not found");
         return payments.findById(fare.paidPaymentId).orElseThrow(()->new AccessFailure(404,"Payment not found"));
     }
     @GetMapping({"/api/v1/payments/{id}","/api/payments/{id}"})
     public PaymentAttempt getPayment(@PathVariable UUID id) {
-        var result=payments.findById(id).orElseThrow(()->new AccessFailure(404,"Payment not found"));owner(result.passengerId);return result;
+        var result=payments.findById(requireNonNull(id)).orElseThrow(()->new AccessFailure(404,"Payment not found"));owner(result.passengerId);return result;
     }
     @GetMapping("/api/v1/payments/ride/{rideId}")
     public List<PaymentAttempt> history(@PathVariable UUID rideId) {
@@ -74,7 +76,7 @@ public class PaymentController {
     }
     @GetMapping("/api/v1/receipts/{id}")
     public Receipt receipt(@PathVariable UUID id) {
-        var result=receipts.findById(id).orElseThrow(()->new AccessFailure(404,"Receipt not found"));owner(result.passengerId);return result;
+        var result=receipts.findById(requireNonNull(id)).orElseThrow(()->new AccessFailure(404,"Receipt not found"));owner(result.passengerId);return result;
     }
     @GetMapping("/api/v1/receipts/ride/{rideId}")
     public Receipt receiptForRide(@PathVariable UUID rideId) {

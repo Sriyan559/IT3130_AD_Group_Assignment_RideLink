@@ -8,6 +8,7 @@ import com.ridelink.driver.exception.DriverNotFoundException;
 import com.ridelink.driver.repository.DriverRepository;
 import java.util.Locale;
 import org.springframework.stereotype.Service;
+import static java.util.Objects.requireNonNull;
 
 @Service
 public class DriverService {
@@ -25,7 +26,7 @@ public class DriverService {
     }
 
     public DriverResponse getById(String driverId) {
-        return driverRepository.findById(driverId)
+        return driverRepository.findById(requireNonNull(driverId))
                 .map(DriverResponse::from)
                 .orElseThrow(DriverNotFoundException::new);
     }

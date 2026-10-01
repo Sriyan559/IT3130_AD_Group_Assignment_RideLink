@@ -10,6 +10,7 @@ import com.ridelink.driver.repository.VehicleRepository;
 import java.util.Locale;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
+import static java.util.Objects.requireNonNull;
 
 @Service
 public class VehicleService {
@@ -22,7 +23,7 @@ public class VehicleService {
     }
 
     public VehicleResponse register(String driverId, RegisterVehicleRequest request) {
-        if (!drivers.existsById(driverId)) {
+        if (!drivers.existsById(requireNonNull(driverId))) {
             throw new DriverNotFoundException();
         }
         String plate = request.plateNumber().replace(" ", "").replace("-", "")

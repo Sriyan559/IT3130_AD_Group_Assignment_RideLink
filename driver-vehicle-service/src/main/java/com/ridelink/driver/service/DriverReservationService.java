@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.*;
 import org.springframework.data.mongodb.core.query.*;
 import org.springframework.stereotype.Service;
+import static java.util.Objects.requireNonNull;
 
 @Service
 public class DriverReservationService {
@@ -25,8 +26,8 @@ public class DriverReservationService {
         if (ride.equals(existing.activeRideId())) return existing;
         if (!mongo.exists(Query.query(Criteria.where("driverId").is(driverId)), Vehicle.class))
             throw new AccessFailure(409, "Driver has no registered vehicle");
-        var time = Criteria.where("location.updatedAt").ne(null).lte(clock.instant());
-        if (maxAge > 0) time.gte(clock.instant().minusSeconds(maxAge));
+        var time = Criteria.where("location.updatedAt").ne(null).lte(requireNonNull(clock.instant()));
+        if (maxAge > 0) time.gte(requireNonNull(clock.instant().minusSeconds(maxAge)));
         Query eligible = Query.query(new Criteria().andOperator(
                 Criteria.where("_id").is(driverId),
                 Criteria.where("availabilityStatus").is(AvailabilityStatus.AVAILABLE),
@@ -59,7 +60,7 @@ public class DriverReservationService {
         throw new AccessFailure(409, "Reservation does not belong to this ride");
     }
     public Driver get(String driverId) {
-        Driver driver = mongo.findById(driverId, Driver.class);
+        Driver driver = mongo.findById(requireNonNull(driverId), Driver.class);
         if (driver == null) throw new AccessFailure(404, "Driver not found");
         return driver;
     }

@@ -44,6 +44,8 @@ class DriverServiceTest {
     }
 
     @Test
+    // Mockito matchers/captors return null placeholders; the mock does not consume them.
+    @SuppressWarnings("null")
     void createsOfflineDriverWithNormalizedValuesAndDatabaseId() {
         DriverRepository repository = mock(DriverRepository.class);
         when(repository.insert(any(Driver.class))).thenAnswer(invocation -> {

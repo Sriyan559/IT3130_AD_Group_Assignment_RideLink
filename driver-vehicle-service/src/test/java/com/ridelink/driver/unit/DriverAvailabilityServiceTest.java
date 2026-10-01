@@ -28,6 +28,8 @@ class DriverAvailabilityServiceTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"AVAILABLE", "OFFLINE"})
+    // Mockito matchers/captors return null placeholders; the mock does not consume them.
+    @SuppressWarnings("null")
     void atomicallyUpdatesOnlyAvailabilityAndReturnsPersistedProfile(String target) {
         var state = AvailabilityStatus.valueOf(target);
         when(mongo.findAndModify(any(Query.class), any(Update.class), any(FindAndModifyOptions.class), eq(Driver.class)))
@@ -54,6 +56,8 @@ class DriverAvailabilityServiceTest {
     }
 
     @Test
+    // Mockito matchers/captors return null placeholders; the mock does not consume them.
+    @SuppressWarnings("null")
     void missingDriverIsNotCreated() {
         assertThatThrownBy(() -> service.update("missing", new UpdateAvailabilityRequest("AVAILABLE")))
                 .isInstanceOf(DriverNotFoundException.class);
@@ -63,6 +67,8 @@ class DriverAvailabilityServiceTest {
     }
 
     @Test
+    // Mockito matchers/captors return null placeholders; the mock does not consume them.
+    @SuppressWarnings("null")
     void existingIneligibleDriverReturnsConflict() {
         when(mongo.exists(any(Query.class), eq(Driver.class))).thenReturn(true);
         assertThatThrownBy(() -> service.update("driver-1", new UpdateAvailabilityRequest("OFFLINE")))
@@ -70,6 +76,8 @@ class DriverAvailabilityServiceTest {
     }
 
     @Test
+    // Mockito matchers/captors return null placeholders; the mock does not consume them.
+    @SuppressWarnings("null")
     void writeFailurePropagatesWithoutFallbackWrite() {
         when(mongo.findAndModify(any(Query.class), any(Update.class), any(FindAndModifyOptions.class), eq(Driver.class)))
                 .thenThrow(new DataAccessResourceFailureException("database unavailable"));
@@ -79,6 +87,8 @@ class DriverAvailabilityServiceTest {
     }
 
     @Test
+    // Mockito matchers/captors return null placeholders; the mock does not consume them.
+    @SuppressWarnings("null")
     void existenceCheckFailurePropagates() {
         when(mongo.exists(any(Query.class), eq(Driver.class)))
                 .thenThrow(new DataAccessResourceFailureException("database unavailable"));

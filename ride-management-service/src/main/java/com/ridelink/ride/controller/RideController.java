@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import static java.util.Objects.requireNonNull;
 
 /**
  * REST Controller exposing Ride Management endpoints.
@@ -64,7 +65,7 @@ public class RideController {
     public ResponseEntity<RideResponse> create(@Valid @RequestBody CreateRideRequest request) {
         if (securityEnabled) com.ridelink.support.Identity.current().requireOwner(request.passengerId(), "PASSENGER");
         RideResponse response = service.create(request);
-        return ResponseEntity.created(URI.create("/api/v1/rides/" + response.id())).body(response);
+        return ResponseEntity.created(requireNonNull(URI.create("/api/v1/rides/" + response.id()))).body(response);
     }
 
     @GetMapping

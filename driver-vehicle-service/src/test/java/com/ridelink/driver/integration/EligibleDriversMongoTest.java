@@ -1,8 +1,8 @@
 package com.ridelink.driver.integration;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.ridelink.driver.document.Driver;
 import com.ridelink.driver.domain.AvailabilityStatus;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
@@ -12,13 +12,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static java.util.Objects.requireNonNull;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @EnabledIfEnvironmentVariable(named = "RIDELINK_MONGO_TESTS", matches = "true")
@@ -57,24 +56,24 @@ class EligibleDriversMongoTest {
         mongo.insert(new com.ridelink.driver.document.Vehicle(null, near.id(), "second-vehicle", "Honda", "Fit", "CAR", 4));
         var beforeDrivers = mongo.findAll(Driver.class);
         var beforeVehicles = mongo.findAll(com.ridelink.driver.document.Vehicle.class);
-        ResponseEntity<java.util.List> result = http.getForEntity("/api/drivers/eligible?lat=0&lng=0&radius=5", java.util.List.class);
+        ResponseEntity<JsonNode> result = http.getForEntity("/api/drivers/eligible?lat=0&lng=0&radius=5", JsonNode.class);
         assertThat(result.getStatusCode().value()).isEqualTo(200);
-        var matches = result.getBody();
+        var matches = requireNonNull(result.getBody());
         assertThat(matches).hasSize(2);
-        Map first = (Map) matches.get(0);
-        Map second = (Map) matches.get(1);
-        assertThat(first.get("driverId")).isEqualTo(near.id());
-        assertThat(((Number) first.get("distanceKm")).doubleValue()).isZero();
-        assertThat((java.util.List) first.get("vehicles")).hasSize(2);
-        assertThat(second.get("driverId")).isEqualTo(far.id());
-        assertThat(((Number) second.get("distanceKm")).doubleValue()).isBetween(2.22,2.23);
+        JsonNode first = matches.get(0);
+        JsonNode second = matches.get(1);
+        assertThat(first.path("driverId").asText()).isEqualTo(near.id());
+        assertThat(first.path("distanceKm").asDouble()).isZero();
+        assertThat(first.path("vehicles")).hasSize(2);
+        assertThat(second.path("driverId").asText()).isEqualTo(far.id());
+        assertThat(second.path("distanceKm").asDouble()).isBetween(2.22,2.23);
         assertThat(mongo.findAll(Driver.class)).containsExactlyInAnyOrderElementsOf(beforeDrivers);
         assertThat(mongo.findAll(com.ridelink.driver.document.Vehicle.class)).containsExactlyInAnyOrderElementsOf(beforeVehicles);
         // Static /eligible route must not be interpreted as a driver ID.
-        assertThat(http.getForEntity("/api/drivers/eligible?lat=50&lng=50&radius=1", java.util.List.class).getBody()).isEmpty();
-        assertThat(http.getForEntity("/api/drivers/" + near.id(), Map.class).getStatusCode().value()).isEqualTo(200);
-        Map spec = http.getForObject("/v3/api-docs", Map.class);
-        assertThat((Map) spec.get("paths")).containsKey("/api/drivers/eligible");
+        assertThat(http.getForEntity("/api/drivers/eligible?lat=50&lng=50&radius=1", JsonNode.class).getBody()).isEmpty();
+        assertThat(http.getForEntity("/api/drivers/" + near.id(), JsonNode.class).getStatusCode().value()).isEqualTo(200);
+        JsonNode spec = http.getForObject("/v3/api-docs", JsonNode.class);
+        assertThat(spec.path("paths").has("/api/drivers/eligible")).isTrue();
         assertThat(mongo.indexOps(Driver.class).getIndexInfo()).extracting(i -> i.getName()).contains("driver_search_status_time");
         assertThat(mongo.indexOps(com.ridelink.driver.document.Vehicle.class).getIndexInfo()).extracting(i -> i.getName()).contains("vehicle_driver_lookup");
     }
@@ -82,9 +81,9 @@ class EligibleDriversMongoTest {
     @Test
     void rejectsInvalidAndMissingParametersWithStructuredError() {
         for (String query : new String[]{"", "?lat=0&lng=0&radius=51", "?lat=NaN&lng=0&radius=5"}) {
-            var response = http.getForEntity("/api/drivers/eligible" + query, Map.class);
+            var response = http.getForEntity("/api/drivers/eligible" + query, JsonNode.class);
             assertThat(response.getStatusCode().value()).isEqualTo(400);
-            assertThat(response.getBody().get("error")).isEqualTo("VALIDATION_ERROR");
+            assertThat(requireNonNull(response.getBody()).path("error").asText()).isEqualTo("VALIDATION_ERROR");
         }
     }
 

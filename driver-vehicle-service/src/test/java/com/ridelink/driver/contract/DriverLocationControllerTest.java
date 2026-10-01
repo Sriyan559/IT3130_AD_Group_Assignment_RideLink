@@ -21,6 +21,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static java.util.Objects.requireNonNull;
 
 @WebMvcTest(DriverLocationController.class)
 class DriverLocationControllerTest {
@@ -39,7 +40,7 @@ class DriverLocationControllerTest {
                     new DriverLocation(request.latitude().doubleValue(), request.longitude().doubleValue(),
                             Instant.parse("2026-09-28T00:00:00Z")));
         });
-        mvc.perform(put(PATH).contentType(MediaType.APPLICATION_JSON).content(body))
+        mvc.perform(put(PATH).contentType(MediaType.APPLICATION_JSON_VALUE).content(requireNonNull(body)))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.id").value("driver-1"))
                 .andExpect(jsonPath("$.availabilityStatus").value("OFFLINE"))
                 .andExpect(jsonPath("$.location.latitude").isNumber())
@@ -54,7 +55,7 @@ class DriverLocationControllerTest {
             "{\"latitude\":90.0001,\"longitude\":0}", "{\"latitude\":-90.0001,\"longitude\":0}",
             "{\"latitude\":0,\"longitude\":180.0001}", "{\"latitude\":0,\"longitude\":-180.0001}"})
     void rejectsMissingAndOutOfRangeCoordinatesWithoutWriting(String body) throws Exception {
-        mvc.perform(put(PATH).contentType(MediaType.APPLICATION_JSON).content(body))
+        mvc.perform(put(PATH).contentType(MediaType.APPLICATION_JSON_VALUE).content(requireNonNull(body)))
                 .andExpect(status().isBadRequest()).andExpect(jsonPath("$.error").value("VALIDATION_ERROR"));
         verifyNoInteractions(service);
     }
@@ -64,7 +65,7 @@ class DriverLocationControllerTest {
             "{\"latitude\":true,\"longitude\":0}", "{\"latitude\":\"NaN\",\"longitude\":0}",
             "{\"latitude\":0,\"longitude\":\"Infinity\"}"})
     void rejectsMalformedCoordinatesWithoutWriting(String body) throws Exception {
-        mvc.perform(put(PATH).contentType(MediaType.APPLICATION_JSON).content(body))
+        mvc.perform(put(PATH).contentType(MediaType.APPLICATION_JSON_VALUE).content(requireNonNull(body)))
                 .andExpect(status().isBadRequest()).andExpect(jsonPath("$.error").value("INVALID_REQUEST"));
         verifyNoInteractions(service);
     }
@@ -82,7 +83,7 @@ class DriverLocationControllerTest {
     }
 
     private void error(int code, String error, String message) throws Exception {
-        mvc.perform(put(PATH).contentType(MediaType.APPLICATION_JSON).content("{\"latitude\":0,\"longitude\":0}"))
+        mvc.perform(put(PATH).contentType(MediaType.APPLICATION_JSON_VALUE).content("{\"latitude\":0,\"longitude\":0}"))
                 .andExpect(status().is(code)).andExpect(jsonPath("$.error").value(error))
                 .andExpect(jsonPath("$.message").value(message)).andExpect(jsonPath("$.path").value(PATH));
     }

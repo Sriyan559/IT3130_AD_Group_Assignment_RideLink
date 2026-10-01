@@ -1,4 +1,5 @@
 package com.ridelink.payment.integration;
+
 import com.ridelink.support.AccessFailure;
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -8,6 +9,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.*;
+import static java.util.Objects.requireNonNull;
 @Component
 public class RideGateway {
     public record Trip(UUID id, String passengerId, String status, BigDecimal distanceKm, Long durationMinutes) {}
@@ -19,7 +21,7 @@ public class RideGateway {
         if(token.length()<32) throw new AccessFailure(503,"Ride service credentials not configured");
         HttpHeaders headers=new HttpHeaders(); headers.set("X-Service-Token",token);
         try {
-            Trip trip=http.exchange(url+"/internal/rides/{id}",HttpMethod.GET,new HttpEntity<>(headers),Trip.class,id).getBody();
+            Trip trip=http.exchange(url+"/internal/rides/{id}",requireNonNull(HttpMethod.GET),new HttpEntity<>(headers),Trip.class,id).getBody();
             if(trip==null) throw new AccessFailure(503,"Invalid Ride response");
             return trip;
         } catch(HttpClientErrorException ex) {

@@ -20,6 +20,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static java.util.Objects.requireNonNull;
 
 @WebMvcTest(VehicleController.class)
 class VehicleControllerTest {
@@ -34,7 +35,7 @@ class VehicleControllerTest {
     void registersVehicleUnderPathDriver() throws Exception {
         when(service.register(eq("driver-1"), any())).thenReturn(new VehicleResponse(
                 "vehicle-1", "driver-1", "ABC1234", "Toyota", "Prius", "CAR", 4));
-        mvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON).content(VALID))
+        mvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON_VALUE).content(VALID))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value("vehicle-1"))
                 .andExpect(jsonPath("$.driverId").value("driver-1"))
@@ -83,7 +84,7 @@ class VehicleControllerTest {
     }
 
     private void rejectValidation(String json) throws Exception {
-        mvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON).content(json))
+        mvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON_VALUE).content(requireNonNull(json)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("VALIDATION_ERROR"));
         verifyNoInteractions(service);
@@ -92,7 +93,7 @@ class VehicleControllerTest {
     @ParameterizedTest
     @ValueSource(strings = {"", "null", "{broken"})
     void rejectsMalformedBody(String json) throws Exception {
-        mvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON).content(json))
+        mvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON_VALUE).content(requireNonNull(json)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("INVALID_REQUEST"));
         verifyNoInteractions(service);
@@ -101,7 +102,7 @@ class VehicleControllerTest {
     @Test
     void missingDriverReturns404() throws Exception {
         when(service.register(eq("driver-1"), any())).thenThrow(new DriverNotFoundException());
-        mvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON).content(VALID))
+        mvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON_VALUE).content(VALID))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("DRIVER_NOT_FOUND"));
     }
@@ -110,7 +111,7 @@ class VehicleControllerTest {
     void duplicateVehicleReturnsSafe409() throws Exception {
         when(service.register(eq("driver-1"), any()))
                 .thenThrow(new VehicleAlreadyExistsException(new DuplicateKeyException("internal details")));
-        mvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON).content(VALID))
+        mvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON_VALUE).content(VALID))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.status").value(409))
                 .andExpect(jsonPath("$.error").value("VEHICLE_ALREADY_EXISTS"))
@@ -122,7 +123,7 @@ class VehicleControllerTest {
     void databaseUnavailableReturns503() throws Exception {
         when(service.register(eq("driver-1"), any()))
                 .thenThrow(new DataAccessResourceFailureException("internal details"));
-        mvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON).content(VALID))
+        mvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON_VALUE).content(VALID))
                 .andExpect(status().isServiceUnavailable())
                 .andExpect(jsonPath("$.error").value("DATABASE_UNAVAILABLE"))
                 .andExpect(jsonPath("$.message").value("Driver data is temporarily unavailable"));

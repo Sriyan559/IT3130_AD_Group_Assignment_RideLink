@@ -22,6 +22,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static java.util.Objects.requireNonNull;
 
 @WebMvcTest(DriverController.class)
 class DriverControllerTest {
@@ -75,7 +76,7 @@ class DriverControllerTest {
     void validRequestReturnsCreatedDriver() throws Exception {
         when(service.create(any())).thenReturn(new DriverResponse("driver-1", "account-1",
                 "B1234567", "Malabe", AvailabilityStatus.OFFLINE));
-        mvc.perform(post("/api/drivers").contentType(MediaType.APPLICATION_JSON).content(VALID))
+        mvc.perform(post("/api/drivers").contentType(MediaType.APPLICATION_JSON_VALUE).content(VALID))
                 .andExpect(status().isCreated()).andExpect(jsonPath("$.id").value("driver-1"))
                 .andExpect(jsonPath("$.availabilityStatus").value("OFFLINE"));
         verify(service).create(new CreateDriverRequest("account-1", "B1234567", "Malabe"));
@@ -86,7 +87,7 @@ class DriverControllerTest {
             "{\"accountId\":\"a1\",\"licenseNumber\":\" \",\"serviceArea\":\"Malabe\"}",
             "{\"accountId\":\"a1\",\"licenseNumber\":\"B1\",\"serviceArea\":\" \"}"})
     void requiredFieldsRejectBlankOrMissingValues(String json) throws Exception {
-        mvc.perform(post("/api/drivers").contentType(MediaType.APPLICATION_JSON).content(json))
+        mvc.perform(post("/api/drivers").contentType(MediaType.APPLICATION_JSON_VALUE).content(requireNonNull(json)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("VALIDATION_ERROR"))
                 .andExpect(jsonPath("$.path").value("/api/drivers"));
@@ -95,8 +96,8 @@ class DriverControllerTest {
 
     @Test
     void overlongLicenceIsRejected() throws Exception {
-        mvc.perform(post("/api/drivers").contentType(MediaType.APPLICATION_JSON)
-                        .content(VALID.replace("B1234567", "B".repeat(51))))
+        mvc.perform(post("/api/drivers").contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(requireNonNull(VALID.replace("B1234567", "B".repeat(51)))))
                 .andExpect(status().isBadRequest());
         verifyNoInteractions(service);
     }
@@ -104,7 +105,7 @@ class DriverControllerTest {
     @ParameterizedTest
     @ValueSource(strings = {"{bad", "", "null"})
     void malformedOrMissingBodyIsRejected(String json) throws Exception {
-        mvc.perform(post("/api/drivers").contentType(MediaType.APPLICATION_JSON).content(json))
+        mvc.perform(post("/api/drivers").contentType(MediaType.APPLICATION_JSON_VALUE).content(requireNonNull(json)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("INVALID_REQUEST"));
         verifyNoInteractions(service);
@@ -113,7 +114,7 @@ class DriverControllerTest {
     @Test
     void duplicateIsConflictWithoutDatabaseDetails() throws Exception {
         when(service.create(any())).thenThrow(new DuplicateKeyException("internal database details"));
-        mvc.perform(post("/api/drivers").contentType(MediaType.APPLICATION_JSON).content(VALID))
+        mvc.perform(post("/api/drivers").contentType(MediaType.APPLICATION_JSON_VALUE).content(VALID))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.error").value("DRIVER_ALREADY_EXISTS"))
                 .andExpect(jsonPath("$.message").value(
@@ -123,7 +124,7 @@ class DriverControllerTest {
     @Test
     void databaseFailureIsServiceUnavailable() throws Exception {
         when(service.create(any())).thenThrow(new DataAccessResourceFailureException("internal details"));
-        mvc.perform(post("/api/drivers").contentType(MediaType.APPLICATION_JSON).content(VALID))
+        mvc.perform(post("/api/drivers").contentType(MediaType.APPLICATION_JSON_VALUE).content(VALID))
                 .andExpect(status().isServiceUnavailable())
                 .andExpect(jsonPath("$.error").value("DATABASE_UNAVAILABLE"));
     }

@@ -27,6 +27,8 @@ class VehicleServiceTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"abc-1234", " ABC1234 ", "abc 1234"})
+    // Mockito matchers/captors return null placeholders; the mock does not consume them.
+    @SuppressWarnings("null")
     void normalizesPlateAndAttributesWithoutChangingDriver(String plate) {
         when(drivers.existsById("driver-1")).thenReturn(true);
         when(vehicles.insert(any(Vehicle.class))).thenAnswer(invocation -> {
@@ -57,6 +59,8 @@ class VehicleServiceTest {
     }
 
     @Test
+    // Mockito matchers/captors return null placeholders; the mock does not consume them.
+    @SuppressWarnings("null")
     void duplicateDatabaseConstraintBecomesVehicleConflict() {
         when(drivers.existsById("driver-1")).thenReturn(true);
         when(vehicles.insert(any(Vehicle.class))).thenThrow(new DuplicateKeyException("internal details"));
@@ -66,6 +70,8 @@ class VehicleServiceTest {
     }
 
     @Test
+    // Mockito matchers/captors return null placeholders; the mock does not consume them.
+    @SuppressWarnings("null")
     void databaseFailureIsNotMistakenForDuplicate() {
         when(drivers.existsById("driver-1")).thenReturn(true);
         when(vehicles.insert(any(Vehicle.class)))

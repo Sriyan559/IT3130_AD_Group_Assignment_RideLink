@@ -11,6 +11,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import static java.util.Objects.requireNonNull;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
@@ -61,7 +62,7 @@ public class ApiExceptionHandler {
 
     private ResponseEntity<ApiError> error(HttpStatus status, String code, String message,
                                            HttpServletRequest request) {
-        return ResponseEntity.status(status).body(new ApiError(Instant.now(), status.value(),
+        return ResponseEntity.status(requireNonNull(status)).body(new ApiError(Instant.now(), status.value(),
                 code, message, request.getRequestURI()));
     }
 }

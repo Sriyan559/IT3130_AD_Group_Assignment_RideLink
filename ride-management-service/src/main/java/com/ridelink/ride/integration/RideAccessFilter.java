@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
+import static java.util.Objects.requireNonNull;
 
 @Component
 @ConditionalOnProperty(name="ridelink.security.enabled", havingValue="true", matchIfMissing=true)
@@ -39,7 +40,7 @@ public class RideAccessFilter extends AccountAccessFilter {
         try { rideId = UUID.fromString(parts[4]); }
         catch (IllegalArgumentException ex) { throw new AccessFailure(400, "Invalid ride ID"); }
         try {
-            var ride = rides.findById(rideId).orElseThrow(() -> new AccessFailure(404, "Ride not found"));
+            var ride = rides.findById(requireNonNull(rideId)).orElseThrow(() -> new AccessFailure(404, "Ride not found"));
             if (parts.length == 6 && parts[5].equals("status")) {
                 driverOwner(identity, ride.getDriverId());
             } else if (method.equals("GET")) {

@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import static org.mockito.Mockito.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.assertj.core.api.Assertions.*;
+import static java.util.Objects.requireNonNull;
 
 class ReservationWorkflowTest {
     RideRepository repo = mock(RideRepository.class);
@@ -21,12 +22,14 @@ class ReservationWorkflowTest {
     PaymentGateway payment = mock(PaymentGateway.class);
     RideService service = new RideService(repo, new RideLifecycle(), new RideMapper());
     Ride ride = new Ride();
+    // Mockito returns null placeholders when registering matchers.
+    @SuppressWarnings("null")
     @BeforeEach void setup() {
         service.setDriverGateway(gateway);
         when(payment.process(any(),anyBoolean())).thenReturn(new PaymentGateway.Result(UUID.randomUUID(),UUID.randomUUID(),"SUCCESS"));
         service.setPaymentGateway(payment);
         ride.setPassengerId("account-p"); ride.prepareForSave();
-        when(repo.findById(ride.getId())).thenReturn(Optional.of(ride));
+        when(repo.findById(requireNonNull(ride.getId()))).thenReturn(Optional.of(ride));
         when(repo.save(any())).thenAnswer(call -> call.getArgument(0));
     }
     @Test void reservesBeforeAssignedAndSameAssignmentIsIdempotent() {

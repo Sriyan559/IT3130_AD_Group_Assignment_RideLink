@@ -42,6 +42,11 @@ without relying on chat memory. This file applies throughout this repository.
 
 ## Current state (last checked 2026-10-01)
 
+- Warning-cleanup session uses the current D:/IT3130_AD_Group_Assignment_RideLink
+  checkout on `main` at `0a5a926`; older sibling-worktree paths below are historical.
+  All 215 supplied Java warnings were reproduced with VS Code's ECJ compiler and
+  reduced to zero while retaining the existing null-analysis settings.
+
 - Authorized whole-project work is on `integration`, sibling checkout
   C:/Users/mashi/Desktop/RideLink-integration. Preserve the original student-ID branch.
 - Delivered to `main` through PR #1, merge 1605e3e on 2026-09-30. All five PR CI
@@ -69,6 +74,9 @@ without relying on chat memory. This file applies throughout this repository.
   docs/requirements-status.md. Latest publication result is in the dated log below.
 
 ## Next work (external delivery / optional scale work)
+
+- Warning cleanup is complete locally; rerun 13 opt-in MongoDB tests once the local
+  database server is available. The 198 remaining tests and full Maven build passed.
 
 - Backend implementation, publication and main merge are complete. GitHub write
   access works with explicit account selection (Dinuli2004); no permission changes.
@@ -634,6 +642,29 @@ Shared repository setup is not a claim of individual contribution by the current
 - Reconciled the original student-ID checkout's pending handoff documentation too.
   Integration evidence/logs and original component logs are committed separately;
   publishing uses normal fast-forward pushes and retains all component branches.
+
+### 2026-10-01 - Fix all 215 Java editor warnings
+
+- Reviewed the clean `main` checkout at `0a5a926` and the user-provided list of
+  exactly 215 warnings. Changed 33 Java files across all services and service-support.
+- Added non-null checks at Spring API boundaries and required filter annotations;
+  used JSON content-type string constants, replaced raw live-test Maps/Lists with
+  JsonNode responses, checked nullable response bodies/database results, and removed
+  unused imports. Mockito matcher/captor null placeholders are exempted only in
+  affected test methods, with explanatory comments. Null analysis remains enabled.
+- Verification: VS Code's ECJ compiler with the same null-analysis/warning preferences
+  and resolved project dependencies reproduced 215 baseline warnings; the final 195
+  Java sources compiled with zero warnings/errors. Root offline Maven verify passed
+  all six reactor modules: 211 tests discovered, 198 passed, 13 skipped, zero failures
+  or errors. `git diff --check` passed.
+- Initial Maven attempts encountered Java file-access errors in the shared user cache;
+  verification succeeded with a copied workspace-local dependency cache. The temporary
+  cache is removed after verification; the original user cache is unchanged.
+- Remaining: rerun the 13 opt-in MongoDB tests when a local server is available. No
+  server was listening on localhost:27017 and the local MongoDB executable was absent;
+  updated live-test code compiled but live execution was not verified in this session.
+- Git: implementation and this work-log update are local/uncommitted on `main`;
+  no branch switch, commit, push, or deployment performed.
 
 ## Entry template
 

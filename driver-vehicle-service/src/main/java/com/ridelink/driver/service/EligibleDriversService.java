@@ -17,6 +17,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
+import static java.util.Objects.requireNonNull;
 
 @Service
 public class EligibleDriversService {
@@ -36,9 +37,9 @@ public class EligibleDriversService {
 
     public List<EligibleDriverResponse> find(EligibleDriversRequest request) {
         Instant now = clock.instant();
-        Criteria timestamp = Criteria.where("location.updatedAt").ne(null).lte(now);
+        Criteria timestamp = Criteria.where("location.updatedAt").ne(null).lte(requireNonNull(now));
         if (maxAgeSeconds > 0) {
-            timestamp.gte(now.minusSeconds(maxAgeSeconds));
+            timestamp.gte(requireNonNull(now.minusSeconds(maxAgeSeconds)));
         }
         Query query = Query.query(new Criteria().andOperator(
                 Criteria.where("availabilityStatus").is(AvailabilityStatus.AVAILABLE),
@@ -58,14 +59,14 @@ public class EligibleDriversService {
         }
         // One bulk vehicle query, even when a driver owns multiple vehicles.
         var vehicles = mongo.find(Query.query(Criteria.where("driverId")
-                        .in(nearby.stream().map(EligibleDriverResponse::driverId).toList())), Vehicle.class)
-                .stream().sorted(Comparator.comparing(Vehicle::id))
-                .map(VehicleResponse::from).collect(Collectors.groupingBy(VehicleResponse::driverId));
+                        .in(requireNonNull(nearby.stream().map(driver -> requireNonNull(driver).driverId()).toList()))), Vehicle.class)
+                .stream().sorted(Comparator.comparing((Vehicle vehicle) -> requireNonNull(vehicle).id()))
+                .map(VehicleResponse::from).collect(Collectors.groupingBy(vehicle -> requireNonNull(vehicle).driverId()));
         return nearby.stream().filter(driver -> vehicles.containsKey(driver.driverId()))
                 .map(driver -> new EligibleDriverResponse(driver.driverId(), driver.location(),
                         driver.distanceKm(), List.copyOf(vehicles.get(driver.driverId()))))
-                .sorted(Comparator.comparingDouble(EligibleDriverResponse::distanceKm)
-                        .thenComparing(EligibleDriverResponse::driverId))
+                .sorted(Comparator.comparingDouble((EligibleDriverResponse driver) -> requireNonNull(driver).distanceKm())
+                        .thenComparing(driver -> requireNonNull(driver).driverId()))
                 .toList();
     }
 

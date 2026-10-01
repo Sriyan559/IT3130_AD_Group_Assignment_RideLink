@@ -14,6 +14,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.repository.support.MongoRepositoryFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static java.util.Objects.requireNonNull;
 
 @EnabledIfEnvironmentVariable(named = "RIDELINK_MONGO_TESTS", matches = "true")
 class ExternalIdMongoTest {
@@ -24,7 +25,7 @@ class ExternalIdMongoTest {
                 .applyConnectionString(new ConnectionString("mongodb://localhost:27017"))
                 .uuidRepresentation(UuidRepresentation.STANDARD).build();
         try (var client = MongoClients.create(settings)) {
-            var mongo = new MongoTemplate(client, database);
+            var mongo = new MongoTemplate(requireNonNull(client), database);
             try {
                 var repository = new MongoRepositoryFactory(mongo).getRepository(RideRepository.class);
                 Ride ride = new Ride();
@@ -34,7 +35,7 @@ class ExternalIdMongoTest {
                 ride.setDurationMinutes(22L);
                 ride.prepareForSave();
                 repository.save(ride);
-                var stored = repository.findById(ride.getId()).orElseThrow();
+                var stored = repository.findById(requireNonNull(ride.getId())).orElseThrow();
                 assertThat(stored.getPassengerId()).isEqualTo(ride.getPassengerId());
                 assertThat(stored.getDriverId()).isEqualTo(ride.getDriverId());
                 assertThat(stored.getDurationMinutes()).isEqualTo(22L);

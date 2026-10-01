@@ -1,7 +1,6 @@
 package com.ridelink.ride.contract;
 
 import com.ridelink.ride.controller.RideController;
-import com.ridelink.ride.domain.RideStatus;
 import com.ridelink.ride.entity.Ride;
 import com.ridelink.ride.exception.ApiExceptionHandler;
 import com.ridelink.ride.lifecycle.RideLifecycle;
@@ -24,6 +23,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static java.util.Objects.requireNonNull;
 
 class ExternalIdContractTest {
     private static final String PASSENGER = "6abbfa6d095b5451ceb2f209";
@@ -33,6 +33,8 @@ class ExternalIdContractTest {
     private Ride saved;
 
     @BeforeEach
+    // Mockito matchers/captors return null placeholders; the mock does not consume them.
+    @SuppressWarnings("null")
     void setup() {
         var service = new RideService(repository, new RideLifecycle(), new RideMapper());
         service.setDriverGateway(mock(com.ridelink.ride.integration.DriverGateway.class));
@@ -55,25 +57,25 @@ class ExternalIdContractTest {
 
     @Test
     void createAndReadPreserveExternalStringIdsAndRideUuid() throws Exception {
-        mvc.perform(post("/api/v1/rides").contentType(MediaType.APPLICATION_JSON)
-                        .content(body("\"" + PASSENGER + "\"", "\"" + DRIVER + "\"")))
+        mvc.perform(post("/api/v1/rides").contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(requireNonNull(body("\"" + PASSENGER + "\"", "\"" + DRIVER + "\""))))
                 .andExpect(status().isCreated()).andExpect(jsonPath("$.passengerId").value(PASSENGER))
                 .andExpect(jsonPath("$.driverId").value(DRIVER)).andExpect(jsonPath("$.status").value("ASSIGNED"));
         assertThat(saved.getPassengerId()).isEqualTo(PASSENGER);
         assertThat(saved.getDriverId()).isEqualTo(DRIVER);
         assertThat(saved.getId()).isInstanceOf(UUID.class);
-        when(repository.findById(saved.getId())).thenReturn(Optional.of(saved));
+        when(repository.findById(requireNonNull(saved.getId()))).thenReturn(Optional.of(saved));
         mvc.perform(get("/api/v1/rides/" + saved.getId())).andExpect(status().isOk())
                 .andExpect(jsonPath("$.passengerId").value(PASSENGER)).andExpect(jsonPath("$.driverId").value(DRIVER));
     }
 
     @Test
     void unassignedRideAcceptsStringDriverInAssignmentPath() throws Exception {
-        mvc.perform(post("/api/v1/rides").contentType(MediaType.APPLICATION_JSON)
-                        .content(body("\"" + PASSENGER + "\"", "null")))
+        mvc.perform(post("/api/v1/rides").contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(requireNonNull(body("\"" + PASSENGER + "\"", "null"))))
                 .andExpect(status().isCreated()).andExpect(jsonPath("$.status").value("REQUESTED"));
         UUID id = saved.getId();
-        when(repository.findById(id)).thenReturn(Optional.of(saved));
+        when(repository.findById(requireNonNull(id))).thenReturn(Optional.of(saved));
         mvc.perform(patch("/api/v1/rides/" + id + "/assign-driver/" + DRIVER))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.driverId").value(DRIVER))
                 .andExpect(jsonPath("$.status").value("ASSIGNED"));
@@ -98,17 +100,21 @@ class ExternalIdContractTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"null", "\"\"", "\"   \""})
+    // Mockito matchers/captors return null placeholders; the mock does not consume them.
+    @SuppressWarnings("null")
     void missingOrBlankPassengerIsRejected(String passenger) throws Exception {
-        mvc.perform(post("/api/v1/rides").contentType(MediaType.APPLICATION_JSON).content(body(passenger, "null")))
+        mvc.perform(post("/api/v1/rides").contentType(MediaType.APPLICATION_JSON_VALUE).content(requireNonNull(body(passenger, "null"))))
                 .andExpect(status().isBadRequest());
         verify(repository, never()).save(any());
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"\"\"", "\"   \""})
+    // Mockito matchers/captors return null placeholders; the mock does not consume them.
+    @SuppressWarnings("null")
     void blankOptionalDriverIsRejected(String driver) throws Exception {
-        mvc.perform(post("/api/v1/rides").contentType(MediaType.APPLICATION_JSON)
-                        .content(body("\"" + PASSENGER + "\"", driver)))
+        mvc.perform(post("/api/v1/rides").contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(requireNonNull(body("\"" + PASSENGER + "\"", driver))))
                 .andExpect(status().isBadRequest());
         verify(repository, never()).save(any());
     }

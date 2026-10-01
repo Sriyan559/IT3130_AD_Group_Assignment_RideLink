@@ -33,6 +33,8 @@ class EligibleDriversServiceTest {
     }
 
     @Test
+    // Mockito matchers/captors return null placeholders; the mock does not consume them.
+    @SuppressWarnings("null")
     void sortsByDistanceThenIdAndGroupsVehiclesWithoutDuplicateDrivers() {
         when(mongo.find(any(Query.class), eq(Driver.class))).thenReturn(List.of(
                 driver("far", 0.02, NOW), driver("b", 0, NOW), driver("a", 0, NOW),
@@ -47,6 +49,8 @@ class EligibleDriversServiceTest {
     }
 
     @Test
+    // Mockito matchers/captors return null placeholders; the mock does not consume them.
+    @SuppressWarnings("null")
     void freshnessCutoffIsInclusiveAndFutureOrMalformedLocationsAreExcluded() {
         when(mongo.find(any(Query.class), eq(Driver.class))).thenReturn(List.of(
                 driver("boundary", 0, NOW.minusSeconds(300)), driver("stale", 0, NOW.minusSeconds(301)),
@@ -59,6 +63,8 @@ class EligibleDriversServiceTest {
     }
 
     @Test
+    // Mockito matchers/captors return null placeholders; the mock does not consume them.
+    @SuppressWarnings("null")
     void radiusBoundaryIsInclusive() {
         when(mongo.find(any(Query.class), eq(Driver.class))).thenReturn(List.of(driver("edge", 0.01, NOW)));
         when(mongo.find(any(Query.class), eq(Vehicle.class))).thenReturn(List.of(vehicle("v", "edge")));
@@ -70,6 +76,8 @@ class EligibleDriversServiceTest {
     }
 
     @Test
+    // Mockito matchers/captors return null placeholders; the mock does not consume them.
+    @SuppressWarnings("null")
     void demoConfigurationCanAllowOldLocations() {
         when(mongo.find(any(Query.class), eq(Driver.class))).thenReturn(List.of(driver("old", 0, NOW.minusSeconds(99999))));
         when(mongo.find(any(Query.class), eq(Vehicle.class))).thenReturn(List.of(vehicle("v", "old")));
@@ -77,6 +85,8 @@ class EligibleDriversServiceTest {
     }
 
     @Test
+    // Mockito matchers/captors return null placeholders; the mock does not consume them.
+    @SuppressWarnings("null")
     void noCandidatesSkipsVehicleQuery() {
         when(mongo.find(any(Query.class), eq(Driver.class))).thenReturn(List.of());
         assertThat(service.find(request)).isEmpty();
@@ -84,12 +94,16 @@ class EligibleDriversServiceTest {
     }
 
     @Test
+    // Mockito matchers/captors return null placeholders; the mock does not consume them.
+    @SuppressWarnings("null")
     void driverDatabaseFailurePropagates() {
         when(mongo.find(any(Query.class), eq(Driver.class))).thenThrow(new DataAccessResourceFailureException("offline"));
         assertThatThrownBy(() -> service.find(request)).isInstanceOf(DataAccessResourceFailureException.class);
     }
 
     @Test
+    // Mockito matchers/captors return null placeholders; the mock does not consume them.
+    @SuppressWarnings("null")
     void vehicleDatabaseFailureDoesNotReturnPartialSuccess() {
         when(mongo.find(any(Query.class), eq(Driver.class))).thenReturn(List.of(driver("d",0,NOW)));
         when(mongo.find(any(Query.class), eq(Vehicle.class))).thenThrow(new DataAccessResourceFailureException("offline"));

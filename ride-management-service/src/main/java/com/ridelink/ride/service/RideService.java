@@ -12,6 +12,7 @@ import com.ridelink.ride.repository.RideRepository;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Core business service for managing ride requests and coordinating the lifecycle state machine.
@@ -204,6 +205,6 @@ public class RideService {
     }
 
     private Ride find(UUID rideId) {
-        return repository.findById(rideId).orElseThrow(() -> new RideNotFoundException(rideId));
+        return repository.findById(requireNonNull(rideId)).orElseThrow(() -> new RideNotFoundException(rideId));
     }
 }

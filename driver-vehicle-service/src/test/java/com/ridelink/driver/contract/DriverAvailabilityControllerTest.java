@@ -23,6 +23,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static java.util.Objects.requireNonNull;
 
 @WebMvcTest(DriverController.class)
 class DriverAvailabilityControllerTest {
@@ -37,7 +38,7 @@ class DriverAvailabilityControllerTest {
         var request = new UpdateAvailabilityRequest(target);
         when(service.update("driver-1", request)).thenReturn(new DriverResponse(
                 "driver-1", "account-1", "B1234567", "Malabe", AvailabilityStatus.valueOf(target)));
-        mvc.perform(put(PATH).contentType(MediaType.APPLICATION_JSON)
+        mvc.perform(put(PATH).contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content("{\"availabilityStatus\":\"" + target + "\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value("driver-1"))
@@ -55,7 +56,7 @@ class DriverAvailabilityControllerTest {
             "{\"availabilityStatus\":\"available\"}", "{\"availabilityStatus\":\" AVAILABLE \"}",
             "{\"availabilityStatus\":\"UNKNOWN\"}", "{\"availabilityStatus\":1}"})
     void invalidStatusIsRejectedBeforeWriting(String body) throws Exception {
-        mvc.perform(put(PATH).contentType(MediaType.APPLICATION_JSON).content(body))
+        mvc.perform(put(PATH).contentType(MediaType.APPLICATION_JSON_VALUE).content(requireNonNull(body)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("VALIDATION_ERROR"))
                 .andExpect(jsonPath("$.path").value(PATH));
@@ -65,7 +66,7 @@ class DriverAvailabilityControllerTest {
     @ParameterizedTest
     @ValueSource(strings = {"", "null", "{bad", "{\"availabilityStatus\":[]}"})
     void malformedBodyIsRejected(String body) throws Exception {
-        mvc.perform(put(PATH).contentType(MediaType.APPLICATION_JSON).content(body))
+        mvc.perform(put(PATH).contentType(MediaType.APPLICATION_JSON_VALUE).content(requireNonNull(body)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("INVALID_REQUEST"));
         verifyNoInteractions(service, driverService);
@@ -91,7 +92,7 @@ class DriverAvailabilityControllerTest {
     }
 
     private void performError(int statusCode, String code, String message) throws Exception {
-        mvc.perform(put(PATH).contentType(MediaType.APPLICATION_JSON)
+        mvc.perform(put(PATH).contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content("{\"availabilityStatus\":\"AVAILABLE\"}"))
                 .andExpect(status().is(statusCode))
                 .andExpect(jsonPath("$.status").value(statusCode))

@@ -1,4 +1,5 @@
 package com.ridelink.payment.payment;
+
 import com.ridelink.payment.dto.request.ProcessPaymentRequest;
 import com.ridelink.payment.dto.request.ProcessPaymentRequest.Method;
 import com.ridelink.payment.integration.RideGateway.Trip;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import static org.assertj.core.api.Assertions.*;
+import static java.util.Objects.requireNonNull;
 
 @SpringBootTest(properties={"spring.datasource.url=jdbc:h2:mem:paymenttests;MODE=PostgreSQL;DB_CLOSE_DELAY=-1",
         "spring.datasource.username=sa","spring.datasource.password=","spring.datasource.driver-class-name=org.h2.Driver",
@@ -32,7 +34,7 @@ class PaymentPersistenceTest {
         var paid=service.process(request("one",false));
         assertThat(paid.amount).isEqualByComparingTo("1150.00");
         assertThat(service.process(request("one",false)).id).isEqualTo(paid.id);
-        assertThat(receipts.findById(paid.receiptId).orElseThrow().total).isEqualByComparingTo("1150.00");
+        assertThat(receipts.findById(requireNonNull(paid.receiptId)).orElseThrow().total).isEqualByComparingTo("1150.00");
         assertThat(payments.count()).isEqualTo(1);assertThat(receipts.count()).isEqualTo(1);
         assertThatThrownBy(()->service.process(request("another",false))).isInstanceOf(AccessFailure.class);
     }

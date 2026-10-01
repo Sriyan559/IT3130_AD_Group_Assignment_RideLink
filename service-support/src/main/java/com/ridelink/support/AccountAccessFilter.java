@@ -1,5 +1,6 @@
 package com.ridelink.support;
 
+import org.springframework.lang.NonNull;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -14,6 +15,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.*;
 import org.springframework.web.client.*;
 import org.springframework.web.filter.OncePerRequestFilter;
+import static java.util.Objects.requireNonNull;
 
 /** Account Service validates signature, current role and ACTIVE status on every request. */
 public abstract class AccountAccessFilter extends OncePerRequestFilter {
@@ -27,12 +29,12 @@ public abstract class AccountAccessFilter extends OncePerRequestFilter {
         this.serviceToken = serviceToken;
         this.json = json;
     }
-    @Override protected boolean shouldNotFilter(HttpServletRequest request) {
+    @Override protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
         String path = request.getServletPath();
         return !(path.startsWith("/api/") || path.startsWith("/internal/"));
     }
-    @Override protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-            FilterChain chain) throws ServletException, IOException {
+    @Override protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
+            @NonNull FilterChain chain) throws ServletException, IOException {
         try {
             if (request.getServletPath().startsWith("/internal/")) {
                 String supplied = request.getHeader("X-Service-Token");
@@ -47,7 +49,7 @@ public abstract class AccountAccessFilter extends OncePerRequestFilter {
                 headers.set(HttpHeaders.AUTHORIZATION, token);
                 Identity identity;
                 try {
-                    identity = http.exchange(accountUrl + "/api/accounts/me", HttpMethod.GET,
+                    identity = http.exchange(accountUrl + "/api/accounts/me", requireNonNull(HttpMethod.GET),
                             new HttpEntity<>(headers), Identity.class).getBody();
                 } catch (HttpClientErrorException ex) {
                     throw new AccessFailure(ex.getStatusCode().value() == 403 ? 403 : 401, "Invalid or inactive account");

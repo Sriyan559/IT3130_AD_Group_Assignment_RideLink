@@ -8,6 +8,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.*;
+import static java.util.Objects.requireNonNull;
 
 @Component
 public class DriverGateway {
@@ -22,7 +23,7 @@ public class DriverGateway {
         HttpHeaders headers=new HttpHeaders();headers.set("X-Service-Token",token);
         try {
             Candidate[] matches=http.exchange(url+"/internal/drivers/eligible?lat={lat}&lng={lng}&radius={radius}",
-                    HttpMethod.GET,new HttpEntity<>(headers),Candidate[].class,lat,lng,radius).getBody();
+                    requireNonNull(HttpMethod.GET),new HttpEntity<>(headers),Candidate[].class,lat,lng,radius).getBody();
             return matches==null?java.util.List.of():java.util.Arrays.asList(matches);
         } catch(RestClientException ex) {throw new AccessFailure(503,"Driver search unavailable");}
     }
@@ -39,7 +40,7 @@ public class DriverGateway {
         if (token.length() < 32) throw new AccessFailure(503, "Driver service credentials not configured");
         HttpHeaders headers = new HttpHeaders(); headers.set("X-Service-Token", token);
         try {
-            return http.exchange(url + path, method, new HttpEntity<>(headers), Profile.class, variables).getBody();
+            return http.exchange(url + path, requireNonNull(method), new HttpEntity<>(headers), Profile.class, requireNonNull(variables)).getBody();
         } catch (HttpClientErrorException ex) {
             int status = ex.getStatusCode().value();
             throw new AccessFailure(status == 404 || status == 409 ? status : 503,

@@ -30,6 +30,8 @@ class DriverLocationServiceTest {
 
     @ParameterizedTest
     @EnumSource(AvailabilityStatus.class)
+    // Mockito matchers/captors return null placeholders; the mock does not consume them.
+    @SuppressWarnings("null")
     void updatesOnlyLocationForEveryStatus(AvailabilityStatus status) {
         var stored = new DriverLocation(6.9271, 79.8612, Instant.parse("2026-09-28T00:00:00Z"));
         when(mongo.findAndModify(any(Query.class), any(Update.class), any(FindAndModifyOptions.class), eq(Driver.class)))
@@ -63,6 +65,8 @@ class DriverLocationServiceTest {
     }
 
     @Test
+    // Mockito matchers/captors return null placeholders; the mock does not consume them.
+    @SuppressWarnings("null")
     void databaseFailurePropagates() {
         when(mongo.findAndModify(any(Query.class), any(Update.class), any(FindAndModifyOptions.class), eq(Driver.class)))
                 .thenThrow(new DataAccessResourceFailureException("unavailable"));

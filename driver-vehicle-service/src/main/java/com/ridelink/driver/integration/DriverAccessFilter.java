@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
+import static java.util.Objects.requireNonNull;
 
 @Component
 @ConditionalOnProperty(name="ridelink.security.enabled", havingValue="true", matchIfMissing=true)
@@ -25,7 +26,7 @@ public class DriverAccessFilter extends AccountAccessFilter {
         String[] parts = path.split("/");
         if (parts.length >= 4 && parts[2].equals("drivers")) {
             try {
-                var driver = drivers.findById(parts[3]).orElseThrow(() -> new AccessFailure(404, "Driver not found"));
+                var driver = drivers.findById(requireNonNull(parts[3])).orElseThrow(() -> new AccessFailure(404, "Driver not found"));
                 identity.requireOwner(driver.accountId(), "DRIVER");
             } catch (org.springframework.dao.DataAccessException ex) {
                 throw new AccessFailure(503, "Driver database unavailable");

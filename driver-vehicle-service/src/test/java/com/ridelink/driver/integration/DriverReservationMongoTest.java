@@ -13,6 +13,7 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import static org.assertj.core.api.Assertions.*;
+import static java.util.Objects.requireNonNull;
 
 @EnabledIfEnvironmentVariable(named="RIDELINK_MONGO_TESTS", matches="true")
 class DriverReservationMongoTest {
@@ -21,7 +22,7 @@ class DriverReservationMongoTest {
     private DriverReservationService service;
     @BeforeEach void setup() {
         client = MongoClients.create("mongodb://localhost:27017");
-        mongo = new MongoTemplate(client,"driver_reservation_test_"+UUID.randomUUID().toString().replace("-",""));
+        mongo = new MongoTemplate(requireNonNull(client),"driver_reservation_test_"+UUID.randomUUID().toString().replace("-",""));
         new DriverIndexes(mongo).run(null);
         service = new DriverReservationService(mongo, Clock.systemUTC(),300);
     }

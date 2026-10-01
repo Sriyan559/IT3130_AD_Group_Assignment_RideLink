@@ -18,6 +18,8 @@ class AdminBootstrapTest {
     private final PasswordEncoder encoder = mock(PasswordEncoder.class);
 
     @Test
+    // Mockito matchers/captors return null placeholders; the mock does not consume them.
+    @SuppressWarnings("null")
     void createsActiveAdminWhenMissing() throws Exception {
         when(repository.findByEmail("admin@example.com")).thenReturn(Optional.empty());
         when(encoder.encode("password123")).thenReturn("hash");
@@ -38,6 +40,8 @@ class AdminBootstrapTest {
     }
 
     @Test
+    // Mockito matchers/captors return null placeholders; the mock does not consume them.
+    @SuppressWarnings("null")
     void doesNotOverwriteExistingAdmin() throws Exception {
         Account existing = new Account();
         existing.setRole(Role.ADMIN);
@@ -51,6 +55,8 @@ class AdminBootstrapTest {
     }
 
     @Test
+    // Mockito matchers/captors return null placeholders; the mock does not consume them.
+    @SuppressWarnings("null")
     void rejectsExistingNonAdminInsteadOfEscalatingPrivileges() {
         Account existing = new Account();
         existing.setRole(Role.PASSENGER);
