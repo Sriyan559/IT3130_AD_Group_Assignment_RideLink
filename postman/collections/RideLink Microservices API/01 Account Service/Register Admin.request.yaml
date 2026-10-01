@@ -1,0 +1,27 @@
+$kind: http-request
+url: "{{account_service_url}}/api/auth/register/admin"
+method: POST
+headers:
+  X-Admin-Registration-Key: "{{admin_registration_key}}"
+body:
+  type: json
+  content: |-
+    {
+      "fullName": "RideLink Administrator",
+      "email": "{{admin_email}}",
+      "password": "{{admin_password}}",
+      "phone": "+94700000000"
+    }
+scripts:
+  - type: beforeRequest
+    code: |-
+      if (!pm.variables.replaceIn('{{admin_registration_key}}')) {
+        throw new Error('admin_registration_key is empty. Configure it and restart the service with the matching ACCOUNT_ADMIN_REGISTRATION_KEY.');
+      }
+  - type: afterResponse
+    code: |-
+      pm.test('Administrator created', () => pm.response.to.have.status(201));
+      if (pm.response.code === 201) {
+        pm.expect(pm.response.json().role).to.eql('ADMIN');
+      }
+order: 2500

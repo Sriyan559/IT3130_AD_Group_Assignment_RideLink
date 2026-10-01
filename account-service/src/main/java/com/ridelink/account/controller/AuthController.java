@@ -5,6 +5,7 @@ import com.ridelink.account.dto.request.RegistrationRequest;
 import com.ridelink.account.dto.response.AccountResponse;
 import com.ridelink.account.dto.response.LoginResponse;
 import com.ridelink.account.service.AuthService;
+import com.ridelink.account.security.AdminRegistrationGuard;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -18,7 +19,11 @@ import org.springframework.web.bind.annotation.*;
 @SecurityRequirements
 public class AuthController {
     private final AuthService service;
-    public AuthController(AuthService service) { this.service = service; }
+    private final AdminRegistrationGuard adminRegistrationGuard;
+    public AuthController(AuthService service, AdminRegistrationGuard adminRegistrationGuard) {
+        this.service = service;
+        this.adminRegistrationGuard = adminRegistrationGuard;
+    }
 
     @PostMapping("/register/passenger")
     @ResponseStatus(HttpStatus.CREATED)
@@ -38,6 +43,21 @@ public class AuthController {
             @ApiResponse(responseCode = "409", description = "Email already exists")})
     public AccountResponse registerDriver(@Valid @RequestBody RegistrationRequest request) {
         return service.registerDriver(request);
+    }
+
+    @PostMapping("/register/admin")
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Register administrator",
+            description = "Creates an ACTIVE ADMIN only when privileged registration is explicitly enabled and the registration key is valid.")
+    @ApiResponses({@ApiResponse(responseCode = "201", description = "Administrator created"),
+            @ApiResponse(responseCode = "400", description = "Validation failure"),
+            @ApiResponse(responseCode = "403", description = "Registration disabled or key invalid"),
+            @ApiResponse(responseCode = "409", description = "Email already exists")})
+    public AccountResponse registerAdmin(
+            @RequestHeader(name = "X-Admin-Registration-Key", defaultValue = "") String registrationKey,
+            @Valid @RequestBody RegistrationRequest request) {
+        adminRegistrationGuard.check(registrationKey);
+        return service.registerAdmin(request);
     }
 
     @PostMapping("/login")

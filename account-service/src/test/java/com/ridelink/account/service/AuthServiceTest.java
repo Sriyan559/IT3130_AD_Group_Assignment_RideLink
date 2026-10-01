@@ -49,6 +49,12 @@ class AuthServiceTest {
         assertEquals(Role.DRIVER, service.registerDriver(request("driver@example.com")).role());
     }
 
+    @Test void registerAdmin_success() {
+        when(encoder.encode(any())).thenReturn("hash");
+        when(repository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        assertEquals(Role.ADMIN, service.registerAdmin(request("admin@example.com")).role());
+    }
+
     @Test void register_duplicateEmail_throwsConflict() {
         when(repository.existsByEmail("person@example.com")).thenReturn(true);
         assertThrows(DuplicateEmailException.class, () -> service.registerPassenger(request("PERSON@example.com")));

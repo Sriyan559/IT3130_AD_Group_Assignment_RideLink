@@ -1,10 +1,8 @@
 $kind: http-request
 url: "{{account_service_url}}/api/accounts/{{passenger_id}}/status"
 method: PATCH
-headers:
-  Content-Type: application/json
 body:
-  type: text
+  type: json
   content: |-
     {
       "status": "SUSPENDED"
@@ -12,5 +10,5 @@ body:
 auth:
   type: bearer
   credentials:
-    token: "{{token}}"
+    token: "{{admin_token}}"
 order: 6000
