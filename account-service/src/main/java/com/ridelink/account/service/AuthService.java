@@ -35,6 +35,7 @@ public class AuthService {
 
     public AccountResponse registerPassenger(RegistrationRequest request) { return register(request, Role.PASSENGER); }
     public AccountResponse registerDriver(RegistrationRequest request) { return register(request, Role.DRIVER); }
+    public AccountResponse registerAdmin(RegistrationRequest request) { return register(request, Role.ADMIN); }
 
     public LoginResponse login(LoginRequest request) {
         Account account = repository.findByEmail(normalize(request.email()))

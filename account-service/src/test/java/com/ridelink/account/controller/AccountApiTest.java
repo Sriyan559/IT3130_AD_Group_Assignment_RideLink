@@ -9,6 +9,7 @@ import com.ridelink.account.dto.response.LoginResponse;
 import com.ridelink.account.exception.GlobalExceptionHandler;
 import com.ridelink.account.repository.AccountRepository;
 import com.ridelink.account.security.AccountAuthorization;
+import com.ridelink.account.security.AdminRegistrationGuard;
 import com.ridelink.account.security.JwtAuthenticationFilter;
 import com.ridelink.account.security.JwtService;
 import com.ridelink.account.security.RestAccessDeniedHandler;
@@ -41,6 +42,7 @@ class AccountApiTest {
     @MockBean AccountService accountService;
     @MockBean JwtService jwtService;
     @MockBean AccountRepository accountRepository;
+    @MockBean AdminRegistrationGuard adminRegistrationGuard;
 
     @Test @WithMockUser(username="p1", roles="PASSENGER")
     void meUsesAuthenticatedIdentity() throws Exception {
@@ -62,6 +64,30 @@ class AccountApiTest {
         mvc.perform(post("/api/auth/login").contentType("application/json")
                         .content("{\"email\":\"p@example.com\",\"password\":\"password1\"}"))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.token").value("jwt"));
+    }
+
+    @Test void adminRegistrationEndpoint_createsAdminWhenGuardAllows() throws Exception {
+        when(authService.registerAdmin(any())).thenReturn(response("a1", Role.ADMIN));
+        mvc.perform(post("/api/auth/register/admin")
+                        .header("X-Admin-Registration-Key", "test-registration-key")
+                        .contentType("application/json")
+                        .content("{\"fullName\":\"Admin\",\"email\":\"admin@example.com\",\"password\":\"password1\",\"phone\":\"+94771234567\"}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.role").value("ADMIN"));
+    }
+
+    @Test void loginWithFormData_returnsHelpful415InsteadOf500() throws Exception {
+        mvc.perform(post("/api/auth/login").contentType("multipart/form-data; boundary=test")
+                        .content("--test\r\nContent-Disposition: form-data; name=\"email\"\r\n\r\np@example.com\r\n--test--\r\n"))
+                .andExpect(status().isUnsupportedMediaType())
+                .andExpect(jsonPath("$.error").value("UNSUPPORTED_MEDIA_TYPE"))
+                .andExpect(jsonPath("$.message").value("Content-Type must be application/json"));
+    }
+
+    @Test void unknownEndpoint_returns404InsteadOf500() throws Exception {
+        mvc.perform(post("/api/auth/not-a-real-endpoint").contentType("application/json").content("{}"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("ENDPOINT_NOT_FOUND"));
     }
 
     @Test void profileUpdateValidation() throws Exception {

@@ -23,3 +23,16 @@ security:
   jwt:
     secret: ${JWT_SECRET}
     expiration-ms: ${JWT_EXPIRATION_MS:3600000}
+
+# Opt-in bootstrap for the first administrator. Keep disabled in normal operation.
+account:
+  admin:
+    registration:
+      enabled: ${ACCOUNT_ADMIN_REGISTRATION_ENABLED:false}
+      key: ${ACCOUNT_ADMIN_REGISTRATION_KEY:}
+    bootstrap:
+      enabled: ${ACCOUNT_ADMIN_BOOTSTRAP_ENABLED:false}
+      email: ${ACCOUNT_ADMIN_EMAIL:}
+      password: ${ACCOUNT_ADMIN_PASSWORD:}
+      full-name: ${ACCOUNT_ADMIN_FULL_NAME:RideLink Administrator}
+      phone: ${ACCOUNT_ADMIN_PHONE:+94000000000}

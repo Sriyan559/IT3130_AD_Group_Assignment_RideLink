@@ -1,0 +1,21 @@
+$kind: http-request
+url: "{{account_service_url}}/api/auth/login"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+      "email": "{{admin_email}}",
+      "password": "{{admin_password}}"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      if (pm.response.code === 200) {
+        const response = pm.response.json();
+        pm.test('Logged-in account is an administrator', () => {
+          pm.expect(response.account.role).to.eql('ADMIN');
+        });
+        pm.environment.set('admin_token', response.token);
+      }
+order: 3500

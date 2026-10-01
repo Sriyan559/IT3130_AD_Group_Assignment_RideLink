@@ -23,6 +23,11 @@ JWT_EXPIRATION_MS=3600000
 ACCOUNT_SERVICE_PORT=8081
 ```
 
+To create the first administrator, start the service once with
+`ACCOUNT_ADMIN_BOOTSTRAP_ENABLED=true`, `ACCOUNT_ADMIN_EMAIL`, and
+`ACCOUNT_ADMIN_PASSWORD` (8-72 characters). Then disable bootstrap and log in through
+`POST /api/auth/login`; use that returned admin JWT for account-status requests.
+
 The service owns the `accounts` collection. A unique MongoDB index on normalized `email` is created through Spring Data mapping. Other services must retain stable account IDs and use API contracts rather than reading this database.
 
 ## Build, test, and run
@@ -46,6 +51,7 @@ Use Swagger's Authorize control with the JWT returned by login. The HTTP bearer 
 |---|---|---|---|
 | POST | `/api/auth/register/passenger` | Public | Create an ACTIVE PASSENGER |
 | POST | `/api/auth/register/driver` | Public | Create an ACTIVE DRIVER identity |
+| POST | `/api/auth/register/admin` | Registration key | Create an ACTIVE ADMIN when explicitly enabled |
 | POST | `/api/auth/login` | Public | Validate credentials/status and issue JWT |
 | GET | `/api/accounts/{id}` | Owner or ADMIN | View safe profile |
 | PUT | `/api/accounts/{id}` | Owner or ADMIN | Update full name and phone |
@@ -57,7 +63,10 @@ Registration never accepts a role or status. Profile updates cannot change email
 
 Roles are `PASSENGER`, `DRIVER`, and `ADMIN`. Public registration can create only the first two. Statuses are `ACTIVE`, `SUSPENDED`, and `DISABLED`; only ACTIVE accounts can log in and authenticate requests.
 
-There is deliberately no public ADMIN registration endpoint. Provision an initial admin through a controlled operational process in a real deployment (for an assignment demo, seed one directly in the Account database with a BCrypt password hash).
+Admin registration is disabled by default. Temporarily set `ACCOUNT_ADMIN_REGISTRATION_ENABLED=true`
+and a random `ACCOUNT_ADMIN_REGISTRATION_KEY` of at least 16 characters, then send that key in the
+`X-Admin-Registration-Key` header. Disable registration again after provisioning. The startup bootstrap
+remains available as an alternative and is idempotent.
 
 ## Error contract
 

@@ -6,7 +6,10 @@
   },
   "variable": [
     { "key": "passenger_password", "value": "Passenger@123", "type": "string" },
-    { "key": "driver_password", "value": "Driver@123", "type": "string" }
+    { "key": "driver_password", "value": "Driver@123", "type": "string" },
+    { "key": "admin_email", "value": "admin@example.com", "type": "string" },
+    { "key": "admin_password", "value": "", "type": "string" },
+    { "key": "admin_registration_key", "value": "", "type": "string" }
   ],
   "item": [
     {
@@ -56,6 +59,11 @@
       "name": "04 - Login",
       "item": [
         {
+          "name": "Register Admin",
+          "event": [{ "listen": "prerequest", "script": { "exec": ["if (!pm.environment.get('admin_registration_key') && !pm.collectionVariables.get('admin_registration_key')) { throw new Error('admin_registration_key is empty. Configure it before registering an administrator.'); }"] } }, { "listen": "test", "script": { "exec": ["pm.test('Administrator created', () => pm.response.to.have.status(201));", "if (pm.response.code === 201) pm.expect(pm.response.json().role).to.eql('ADMIN');"] } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "X-Admin-Registration-Key", "value": "{{admin_registration_key}}", "type": "text" }], "body": { "mode": "raw", "raw": "{\"fullName\":\"RideLink Administrator\",\"email\":\"{{admin_email}}\",\"password\":\"{{admin_password}}\",\"phone\":\"+94700000000\"}", "options": { "raw": { "language": "json" } } }, "url": "{{account_service_url}}/api/auth/register/admin" }
+        },
+        {
           "name": "Passenger Login",
           "event": [{ "listen": "test", "script": { "exec": ["pm.test('Login succeeds', () => pm.response.to.have.status(200));", "const b=pm.response.json(); pm.expect(b.token).to.be.a('string').and.not.empty; pm.expect(b.account.role).to.eql('PASSENGER'); pm.expect(b.account).not.to.have.property('passwordHash'); pm.environment.set('token', b.token);"] } }],
           "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"email\":\"{{passenger_email}}\",\"password\":\"{{passenger_password}}\"}" }, "url": "{{account_service_url}}/api/auth/login" }
@@ -64,6 +72,11 @@
           "name": "Driver Login",
           "event": [{ "listen": "test", "script": { "exec": ["pm.test('Login succeeds', () => pm.response.to.have.status(200));", "const b=pm.response.json(); pm.expect(b.account.role).to.eql('DRIVER'); pm.environment.set('driver_token', b.token);"] } }],
           "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"email\":\"{{driver_email}}\",\"password\":\"{{driver_password}}\"}" }, "url": "{{account_service_url}}/api/auth/login" }
+        },
+        {
+          "name": "Admin Login",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Admin login succeeds', () => pm.response.to.have.status(200));", "const b=pm.response.json(); pm.expect(b.account.role).to.eql('ADMIN'); pm.environment.set('admin_token', b.token);"] } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"email\":\"{{admin_email}}\",\"password\":\"{{admin_password}}\"}" }, "url": "{{account_service_url}}/api/auth/login" }
         },
         {
           "name": "Wrong Password",
@@ -83,7 +96,7 @@
     {
       "name": "06 - Account Status",
       "item": [
-        { "name": "Admin Change Status - Requires Legitimate Admin Token", "description": "BLOCKED in QA: no legitimate admin bootstrap mechanism exists. Supply an authorized admin_token only when provisioned operationally.", "request": { "method": "PATCH", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{admin_token}}", "type": "string" }] }, "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"status\":\"SUSPENDED\"}" }, "url": "{{account_service_url}}/api/accounts/{{passenger_id}}/status" } }
+        { "name": "Admin Change Status", "description": "Run Admin Login first. This request uses the freshly stored admin_token.", "event": [{ "listen": "prerequest", "script": { "exec": ["if (!pm.environment.get('admin_token')) { throw new Error('admin_token is empty. Run Admin Login first.'); }"] } }, { "listen": "test", "script": { "exec": ["pm.test('Account status updated', () => pm.response.to.have.status(200));"] } }], "request": { "method": "PATCH", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{admin_token}}", "type": "string" }] }, "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"status\":\"SUSPENDED\"}", "options": { "raw": { "language": "json" } } }, "url": "{{account_service_url}}/api/accounts/{{passenger_id}}/status" } }
       ]
     },
     {
