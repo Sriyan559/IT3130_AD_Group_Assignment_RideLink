@@ -2,6 +2,7 @@ package com.ridelink.payment;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 
 /**
  * RideLink Fare & Payment Service Application.
@@ -12,6 +13,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * </p>
  */
 @SpringBootApplication
+@ConfigurationPropertiesScan
 public class FarePaymentServiceApplication {
 
     public static void main(String[] args) {
